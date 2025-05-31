@@ -18,17 +18,17 @@ func LoadDummyPlayers() {
 func AddPlayers(players []NewPlayer) {
 	for _, dummy := range players {
 		player := &model.Player{
-			ID:    dummy.id,
-			Level: dummy.level,
+			ID:    dummy.Id,
+			Level: dummy.Level,
 		}
 		Players[player.ID] = player
 	}
 }
 
 type NewPlayer struct {
-	id          string
-	countryCode string
-	level       int
+	Id          string
+	CountryCode string
+	Level       int
 }
 
 var dummyPlayers = [...]NewPlayer{
