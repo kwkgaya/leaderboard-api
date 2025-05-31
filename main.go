@@ -1,19 +1,20 @@
 package main
 
-
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"context"
 	"time"
 
+	"leaderboard/internal/storage"
 	"leaderboard/pkg/api"
 )
 
 func main() {
+	storage.LoadDummyPlayers()
 
 	server := &http.Server{
 		Addr:    ":8080", // TODO: Conmfigure port from environment variable or config file
@@ -25,7 +26,7 @@ func main() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Failed to start server: %v", err)
 		}
-		
+
 		log.Println("Server stopped gracefully")
 	}()
 

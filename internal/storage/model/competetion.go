@@ -1,5 +1,9 @@
 package model
 
+import (
+	"time"
+)
+
 type Competition struct {
 	ID        string
 	CreatedAt time.Time
