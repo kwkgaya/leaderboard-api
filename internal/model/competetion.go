@@ -25,17 +25,18 @@ type Competition struct {
 
 var ErrCompetitionFull = errors.New("competition is full, cannot add more players")
 var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
-var ErrNotEnoughPlayers = errors.New("Competetion has less than two players")
+var ErrNotEnoughPlayers = errors.New("competetion has less than two players")
 
-func NewCompetition(level uint) *Competition {
-	return &Competition{
+func NewCompetition(initialLevel uint) *Competition {
+	var comp = &Competition{
 		id:           uuid.New().String(),
-		initialLevel: level,
+		initialLevel: initialLevel,
 		createdAt:    timeprovider.Current.Now(),
 		startedAt:    time.Time{},
 		endsAt:       time.Time{},
 		players:      make([]CompetingPlayer, 0, MaxPlayersForCompetetion),
 	}
+	return comp
 }
 
 func (c *Competition) AddPlayer(player *Player) error {
@@ -47,6 +48,12 @@ func (c *Competition) AddPlayer(player *Player) error {
 	}
 	c.players = append(c.players, *NewCompetingPlayer(player))
 	player.SetActiveCompetition(c)
+
+	if len(c.players) == MaxPlayersForCompetetion {
+		if err := c.Start(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
