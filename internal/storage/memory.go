@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"leaderboard/internal/storage/model"
+	"leaderboard/internal/model"
 )
 
 // Holds all Players and Competitions in memory
@@ -17,11 +17,8 @@ func LoadDummyPlayers() {
 
 func AddPlayers(players []NewPlayer) {
 	for _, dummy := range players {
-		player := &model.Player{
-			ID:    dummy.Id,
-			Level: dummy.Level,
-		}
-		Players[player.ID] = player
+		player := model.NewPlayer(dummy.Id, dummy.Level, dummy.CountryCode)
+		Players[player.Id()] = player
 	}
 }
 

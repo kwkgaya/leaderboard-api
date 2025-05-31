@@ -1,13 +1,16 @@
 package matchmaking
 
 import (
-	"fmt"
+	"errors"
+	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
-	"leaderboard/internal/storage/model"
 )
 
-var ErrPlayerIdEmpty = fmt.Errorf("player ID cannot be empty")
-var ErrPlayerNotFound = fmt.Errorf("player not found")
+var ErrPlayerIdEmpty = errors.New("player ID cannot be empty")
+var ErrPlayerNotFound = errors.New("player not found")
+
+var waitingCompetitions = make([]*model.Competition, 10)
+var waitingPlayers = make([]*model.CompetingPlayer, 10)
 
 func JoinCompetition(playerID string) (*model.Competition, error) {
 	if playerID == "" {

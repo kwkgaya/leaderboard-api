@@ -21,7 +21,7 @@ func setup() {
 	})
 }
 
-func TestJoinCompetition(t *testing.T) {
+func TestJoinCompetitionBasic(t *testing.T) {
 	// Basic test cases for joining a competition
 	tests := []struct {
 		name          string
