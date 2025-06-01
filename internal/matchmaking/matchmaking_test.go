@@ -402,7 +402,7 @@ func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(
 	}
 }
 
-func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinToNewCompetition(t *testing.T) {
+func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinNewCompetition(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
 	config.CompetitionDuration = 1 * time.Second
@@ -410,12 +410,10 @@ func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinToNewCompetition(t *t
 	_, _ = JoinCompetition("bob")
 	comp1, _ := JoinCompetition("bob_1")
 
-	time.Sleep(1500 * time.Millisecond) // Wait for starting and ending
+	time.Sleep(2 * time.Second) // Wait for starting and ending
 
 	_, _ = JoinCompetition("bob_2")
 	comp2, err := JoinCompetition("bob_1")
-
-	time.Sleep(1 * time.Second) // Wait for starting
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
