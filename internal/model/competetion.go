@@ -28,14 +28,13 @@ var ErrCompetitionStarted = errors.New("competition has already started, cannot 
 var ErrNotEnoughPlayers = errors.New("competetion has less than two players")
 
 // TODO: Evaluate if we need to store the initial level
-func NewCompetition(initialLevel int) *Competition {
+func NewCompetition() *Competition {
 	var comp = &Competition{
-		id:           uuid.New().String(),
-		initialLevel: initialLevel,
-		createdAt:    timeprovider.Current.Now(),
-		startedAt:    time.Time{},
-		endsAt:       time.Time{},
-		players:      make([]CompetingPlayer, 0, MaxPlayersForCompetetion),
+		id:        uuid.New().String(),
+		createdAt: timeprovider.Current.Now(),
+		startedAt: time.Time{},
+		endsAt:    time.Time{},
+		players:   make([]CompetingPlayer, 0, MaxPlayersForCompetetion),
 	}
 	return comp
 }
@@ -79,9 +78,6 @@ func (c *Competition) CreatedAt() time.Time {
 	return c.createdAt
 }
 
-func (c *Competition) InitialLevel() int {
-	return c.initialLevel
-}
 func (c *Competition) StartedAt() time.Time {
 	return c.startedAt
 }

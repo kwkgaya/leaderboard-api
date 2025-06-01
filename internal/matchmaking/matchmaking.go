@@ -168,7 +168,7 @@ func createNewCompetetion(player *model.Player, waitingPlayer *model.Player) (*m
 		return nil, errors.New("both players must be provided")
 	}
 
-	comp := model.NewCompetition(player.Level())
+	comp := model.NewCompetition()
 	storage.Competitions[comp.Id()] = comp
 	err := comp.AddPlayer(player)
 	if err != nil {

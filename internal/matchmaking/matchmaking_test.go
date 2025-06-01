@@ -106,7 +106,7 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 
 	player := storage.Players["player3"]
 	// Simulate player already in a competition
-	fakeComp := model.NewCompetition(player.Level())
+	fakeComp := model.NewCompetition()
 	player.SetActiveCompetition(fakeComp)
 
 	comp, err := JoinCompetition("player3")

@@ -17,10 +17,8 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 	timeprovider.Current = &timeprovider.MockTimeProvider{FixedTime: fixedTime}
 	defer func() { timeprovider.Current = originalProvider }()
 
-	level := 5
-
 	// Act
-	competition := NewCompetition(level)
+	competition := NewCompetition()
 
 	// Assert
 	if competition == nil {
@@ -28,9 +26,6 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 	}
 	if _, err := uuid.Parse(competition.Id()); err != nil {
 		t.Errorf("expected valid UUID for ID, got %q", competition.Id())
-	}
-	if competition.InitialLevel() != level {
-		t.Errorf("expected InitialLevel %d, got %d", level, competition.InitialLevel())
 	}
 	if !competition.CreatedAt().Equal(fixedTime) {
 		t.Errorf("expected CreatedAt %v, got %v", fixedTime, competition.CreatedAt())
@@ -53,7 +48,7 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 }
 
 func TestCompetition_AddPlayer_Success(t *testing.T) {
-	competition := NewCompetition(1)
+	competition := NewCompetition()
 	player := NewPlayer("p1", 1, "US")
 
 	err := competition.AddPlayer(player)
@@ -77,7 +72,7 @@ func TestCompetition_AddPlayer_Success(t *testing.T) {
 }
 
 func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
-	competition := NewCompetition(1)
+	competition := NewCompetition()
 	for i := 0; i < MaxPlayersForCompetetion; i++ {
 		player := NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US")
 
@@ -94,7 +89,7 @@ func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 }
 
 func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
-	competition := NewCompetition(1)
+	competition := NewCompetition()
 	for i := 0; i < MinPlayersForCompetetion; i++ {
 		err1 := competition.AddPlayer(NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US"))
 		if err1 != nil {
@@ -114,7 +109,7 @@ func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
 }
 
 func TestCompetition_Start_NotEnoughPlayers(t *testing.T) {
-	competition := NewCompetition(1)
+	competition := NewCompetition()
 	// Only one player, less than MinPlayersForCompetetion
 	player := NewPlayer("p0", 1, "US")
 	_ = competition.AddPlayer(player)
@@ -132,7 +127,7 @@ func TestCompetition_Start_SuccessWithMinPlayers(t *testing.T) {
 	timeprovider.Current = &timeprovider.MockTimeProvider{FixedTime: fixedTime}
 	defer func() { timeprovider.Current = originalProvider }()
 
-	competition := NewCompetition(1)
+	competition := NewCompetition()
 	player1 := NewPlayer("p1", 1, "US")
 	player2 := NewPlayer("p2", 1, "US")
 	_ = competition.AddPlayer(player1)
@@ -153,7 +148,7 @@ func TestCompetition_Start_SuccessWithMinPlayers(t *testing.T) {
 }
 
 func TestCompetition_Start_CalledTwice(t *testing.T) {
-	competition := NewCompetition(1)
+	competition := NewCompetition()
 	player1 := NewPlayer("p1", 1, "US")
 	player2 := NewPlayer("p2", 1, "US")
 	_ = competition.AddPlayer(player1)
