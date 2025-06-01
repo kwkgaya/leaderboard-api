@@ -7,12 +7,12 @@ const (
 
 type Player struct {
 	id                string
-	level             uint
+	level             int
 	countryCode       string
 	activeCompetition *Competition
 }
 
-func NewPlayer(id string, level uint, countryCode string) *Player {
+func NewPlayer(id string, level int, countryCode string) *Player {
 	return &Player{
 		id:          id,
 		level:       level,
@@ -22,7 +22,7 @@ func NewPlayer(id string, level uint, countryCode string) *Player {
 func (p *Player) Id() string {
 	return p.id
 }
-func (p *Player) Level() uint {
+func (p *Player) Level() int {
 	return p.level
 }
 func (p *Player) CountryCode() string {

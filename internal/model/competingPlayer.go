@@ -7,7 +7,7 @@ import (
 
 type CompetingPlayer struct {
 	player    *Player
-	score     uint
+	score     int
 	createdAt time.Time
 }
 
@@ -22,7 +22,7 @@ func (p *CompetingPlayer) CreatedAt() time.Time {
 	return p.createdAt
 }
 
-func (p *CompetingPlayer) Score() uint {
+func (p *CompetingPlayer) Score() int {
 	return p.score
 }
 
@@ -30,6 +30,6 @@ func (p *CompetingPlayer) Player() *Player {
 	return p.player
 }
 
-func (p *CompetingPlayer) AddScore(score uint) {
+func (p *CompetingPlayer) AddScore(score int) {
 	p.score += score
 }

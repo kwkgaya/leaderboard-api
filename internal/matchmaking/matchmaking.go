@@ -25,8 +25,8 @@ var (
 	mutex = &sync.Mutex{}
 
 	// Maps to hold players and competitions waiting for a match
-	waitingPlayers      = make(map[uint]*model.Player)
-	waitingCompetitions = make(map[uint]*model.Competition)
+	waitingPlayers      = make(map[int]*model.Player)
+	waitingCompetitions = make(map[int]*model.Competition)
 )
 
 // JoinCompetition allows a player to join a competition.
@@ -108,8 +108,8 @@ func tryStartCompetition(player *model.Player) error {
 	playerFound := false
 	for i := 1; ; i++ {
 		// Try finding a matching player at closest levels
-		higherLevel := player.Level() + uint(i)
-		lowerLevel := player.Level() - uint(i)
+		higherLevel := player.Level() + i
+		lowerLevel := player.Level() - i
 		var waitingPlayer *model.Player
 		if higherLevel <= model.MaxLevel {
 			waitingPlayer, playerFound = waitingPlayers[higherLevel]

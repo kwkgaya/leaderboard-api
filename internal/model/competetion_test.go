@@ -17,7 +17,7 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 	timeprovider.Current = &timeprovider.MockTimeProvider{FixedTime: fixedTime}
 	defer func() { timeprovider.Current = originalProvider }()
 
-	level := uint(5)
+	level := 5
 
 	// Act
 	competition := NewCompetition(level)

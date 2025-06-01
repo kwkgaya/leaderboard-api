@@ -330,3 +330,32 @@ func TestJoinCompetition_CompetetionStartAfterWait_NewJoineesAddedToNewCompeteti
 		t.Errorf("expected alice_2 to be added to a new competition, but added to old one %s", alice2comp.Id())
 	}
 }
+
+func TestJoinCompetition_NotMatchedWithinWait_CompetetionStartsAfterNewUserJoin(t *testing.T) {
+	setup()
+	MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
+
+	_, err := JoinCompetition("bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	time.Sleep(1 * time.Second) // Wait for MatchWaitDuration to pass
+
+	comp, err := JoinCompetition("bob_1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	time.Sleep(1 * time.Second)
+
+	if comp.StartedAt().IsZero() {
+		t.Errorf("competition should have started after %v, got started at %v", MatchWaitDuration, comp.StartedAt())
+	}
+	if len(comp.Players()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	}
+	if len(waitingCompetitions) != 0 {
+		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
+	}
+}

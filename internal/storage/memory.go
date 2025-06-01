@@ -25,7 +25,7 @@ func AddPlayers(players []NewPlayer) {
 type NewPlayer struct {
 	Id          string
 	CountryCode string
-	Level       uint
+	Level       int
 }
 
 var dummyPlayers = [...]NewPlayer{
