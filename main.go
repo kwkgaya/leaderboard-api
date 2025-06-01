@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"leaderboard/api"
 	"leaderboard/internal/storage"
-	"leaderboard/pkg/api"
 )
 
 func main() {

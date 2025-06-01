@@ -22,10 +22,10 @@ var (
 
 	// Maps to hold players and competitions waiting for a match
 	waitingPlayers      = make(map[int]*model.Player)
-	waitingCompetitions = make(map[int]*model.Competition)
+	waitingCompetitions = make(map[int]model.ICompetition)
 )
 
-func JoinCompetition(playerID string) (*model.Competition, error) {
+var JoinCompetition = func(playerID string) (model.ICompetition, error) {
 	if playerID == "" {
 		return nil, ErrPlayerIdEmpty
 	}
@@ -164,7 +164,7 @@ func scheduleTickerForPlayer(player *model.Player) {
 	}
 }
 
-func createNewCompetition(player *model.Player, waitingPlayer *model.Player) (*model.Competition, error) {
+func createNewCompetition(player *model.Player, waitingPlayer *model.Player) (model.ICompetition, error) {
 	if player == nil || waitingPlayer == nil {
 		return nil, errors.New("both players must be provided")
 	}

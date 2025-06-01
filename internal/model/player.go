@@ -6,7 +6,7 @@ type Player struct {
 	id                string
 	level             int
 	countryCode       string
-	activeCompetition *Competition
+	activeCompetition ICompetition
 }
 
 func NewPlayer(id string, level int, countryCode string) *Player {
@@ -28,9 +28,9 @@ func (p *Player) Level() int {
 func (p *Player) CountryCode() string {
 	return p.countryCode
 }
-func (p *Player) ActiveCompetition() *Competition {
+func (p *Player) ActiveCompetition() ICompetition {
 	return p.activeCompetition
 }
-func (p *Player) SetActiveCompetition(c *Competition) {
+func (p *Player) SetActiveCompetition(c ICompetition) {
 	p.activeCompetition = c
 }

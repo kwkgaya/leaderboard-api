@@ -1,13 +1,15 @@
 package api
 
 import (
-	"net/http"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"leaderboard/api/handlers"
+	_ "leaderboard/docs" // Import the generated Swagger docs
 
 	"github.com/go-chi/chi/v5"
-	"github.com/swaggo/http-swagger"
-	_ "leaderboard/docs" // Import the generated Swagger docs
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func Router() http.Handler {
@@ -15,36 +17,13 @@ func Router() http.Handler {
 
 	// TODO: Exclude from production builds
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
-	
-	r.Post("/leaderboard/join", joinHandler)
+
+	r.Post("/leaderboard/join", handlers.JoinHandler)
 	r.Post("/leaderboard/score", submitScoreHandler)
 	r.Get("/leaderboard/player/{playerID}", playerLeaderboardHandler)
 	r.Get("/leaderboard/{leaderboardID}", competitionHandler)
 
 	return r
-}
-
-// joinHandler godoc
-// @Summary      Join a leaderboard competition
-// @Description  Match a player to a competition or enqueue them
-// @Param        player_id  query  string  true  "Player ID"
-// @Success      200  {object}  map[string]interface{}
-// @Accepted     202  {string}  string  "Player queued for matchmaking"
-// @Failure      400  {string}  string  "Bad request"
-// @Failure      409  {string}  string  "Player already in competition"
-// @Router       /leaderboard/join [post]
-func joinHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	
-	// Simulate joining a leaderboard
-	response := map[string]string{
-		"message": "Player joined successfully",
-	}
-	
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
-		return
-	}
 }
 
 // submitScoreHandler godoc
@@ -57,12 +36,12 @@ func joinHandler(w http.ResponseWriter, r *http.Request) {
 // @Router       /leaderboard/score [post]
 func submitScoreHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// Simulate score submission
 	response := map[string]string{
 		"message": "Score submitted successfully",
 	}
-	
+
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return
@@ -77,15 +56,15 @@ func submitScoreHandler(w http.ResponseWriter, r *http.Request) {
 // @Router       /leaderboard/player/{playerID} [get]
 func playerLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	playerID := chi.URLParam(r, "playerID")
-	
+
 	// Simulate fetching player leaderboard
 	response := map[string]string{
 		"playerID": playerID,
 		"message":  "Player leaderboard fetched successfully",
 	}
-	
+
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return
@@ -101,15 +80,15 @@ func playerLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 // @Router       /leaderboard/{leaderboardID} [get]
 func competitionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	leaderboardID := chi.URLParam(r, "leaderboardID")
-	
+
 	// Simulate fetching competition leaderboard
 	response := map[string]string{
 		"leaderboardID": leaderboardID,
 		"message":       "Competition leaderboard fetched successfully",
 	}
-	
+
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return

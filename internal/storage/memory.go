@@ -8,7 +8,7 @@ import (
 // Holds all Players and Competitions in memory
 var (
 	Players      = map[string]*model.Player{}
-	Competitions = map[string]*model.Competition{}
+	Competitions = map[string]model.ICompetition{}
 )
 
 // TODO: Define an interface

@@ -15,7 +15,7 @@ func setup() {
 	clear(waitingPlayers)
 	clear(waitingCompetitions)
 	storage.Players = map[string]*model.Player{}
-	storage.Competitions = map[string]*model.Competition{}
+	storage.Competitions = map[string]model.ICompetition{}
 
 	config.MatchWaitDuration = 30 * time.Second
 	config.CompetitionDuration = 1 * time.Hour
@@ -123,7 +123,7 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 
 func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 	setup()
-	var previousComp *model.Competition
+	var previousComp model.ICompetition
 	for i := 1; i <= config.MaxPlayersForCompetition; i++ {
 		playerId := fmt.Sprintf("player%v", i)
 		storage.AddPlayers([]storage.NewPlayer{
@@ -187,7 +187,7 @@ func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 
 func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetitionStarts(t *testing.T) {
 	setup()
-	var previousComp *model.Competition
+	var previousComp model.ICompetition
 	for i := 1; i <= config.MaxPlayersForCompetition+2; i++ {
 		playerId := fmt.Sprintf("player%v", i)
 		storage.AddPlayers([]storage.NewPlayer{

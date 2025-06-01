@@ -9,21 +9,30 @@ import (
 	"github.com/google/uuid"
 )
 
+// ICompetition defines the contract for a competition
+type ICompetition interface {
+	Id() string
+	CreatedAt() time.Time
+	StartedAt() time.Time
+	EndsAt() time.Time
+	Players() []CompetingPlayer
+	AddPlayer(player *Player) error
+	Start() error
+}
+
 type Competition struct {
-	id           string
-	initialLevel int
-	createdAt    time.Time
-	startedAt    time.Time
-	endsAt       time.Time
-	players      []CompetingPlayer
+	id        string
+	createdAt time.Time
+	startedAt time.Time
+	endsAt    time.Time
+	players   []CompetingPlayer
 }
 
 var ErrCompetitionFull = errors.New("competition is full, cannot add more players")
 var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
-var ErrNotEnoughPlayers = errors.New("competition has less than two players")
+var ErrNotEnoughPlayers = errors.New("competition don't have enough players to start")
 
-// TODO: Evaluate if we need to store the initial level
-func NewCompetition() *Competition {
+func NewCompetition() ICompetition {
 	var comp = &Competition{
 		id:        uuid.New().String(),
 		createdAt: timeprovider.Current.Now(),
