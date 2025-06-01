@@ -28,6 +28,7 @@ func setup() {
 		{Id: "alice_2", CountryCode: "IN", Level: 1},
 		{Id: "bob_2", CountryCode: "IN", Level: 2},
 		{Id: "carlos_2", CountryCode: "IN", Level: 3},
+		{Id: "ian", CountryCode: "IN", Level: 10},
 	})
 }
 
@@ -283,6 +284,45 @@ func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetetionStartsAfter
 	}
 }
 
+func TestJoinCompetition_MatchedwithTwoPlayersInMinandMaxLevels_CompetetionStartsAfterMatchWaitDuration(t *testing.T) {
+	setup()
+	MatchWaitDuration = 1 * time.Second // Set a short wait duration for testing
+
+	_, err := JoinCompetition("alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	_, err = JoinCompetition("ian")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	alice := storage.Players["alice"]
+	ian := storage.Players["ian"]
+
+	time.Sleep(2 * time.Second) // Wait for starting competition after MatchWaitDuration
+
+	if alice.ActiveCompetition() == nil {
+		t.Errorf("alice should be in a competition, got nil")
+	}
+	if ian.ActiveCompetition() == nil {
+		t.Errorf("ian should be in a competition, got nil")
+	}
+	if alice.ActiveCompetition().Id() != ian.ActiveCompetition().Id() {
+		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.ActiveCompetition().Id(), ian.ActiveCompetition().Id())
+	}
+	comp := alice.ActiveCompetition()
+
+	if comp.StartedAt().IsZero() {
+		t.Errorf("competition should have started after %v, got started at %v", MatchWaitDuration, comp.StartedAt())
+	}
+	if len(comp.Players()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	}
+	if len(waitingCompetitions) != 0 {
+		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
+	}
+}
+
 func TestJoinCompetition_CompetetionStartAfterWait_NewJoineesAddedToNewCompetetion(t *testing.T) {
 	setup()
 	MatchWaitDuration = 1500 * time.Millisecond // Set a short wait duration for testing
@@ -347,7 +387,7 @@ func TestJoinCompetition_NotMatchedWithinWait_CompetetionStartsAfterNewUserJoin(
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second) // Wait for starting competition after MatchWaitDuration
 
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", MatchWaitDuration, comp.StartedAt())
