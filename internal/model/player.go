@@ -1,9 +1,6 @@
 package model
 
-const (
-	MaxLevel = 10 // Maximum level a player can have
-	MinLevel = 1  // Minimum level a player can have
-)
+import "leaderboard/internal/config"
 
 type Player struct {
 	id                string
@@ -13,6 +10,9 @@ type Player struct {
 }
 
 func NewPlayer(id string, level int, countryCode string) *Player {
+	if level < config.MinLevel || level > config.MaxLevel {
+		panic("player level must be between MinLevel and MaxLevel")
+	}
 	return &Player{
 		id:          id,
 		level:       level,

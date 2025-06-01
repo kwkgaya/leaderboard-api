@@ -2,16 +2,11 @@ package matchmaking
 
 import (
 	"errors"
+	"leaderboard/internal/config"
 	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
 	"sync"
 	"time"
-)
-
-var (
-	// TODO: Read from config or env
-	MatchWaitDuration  = 30 * time.Second
-	MatchRetryInterval = 1 * time.Second
 )
 
 var (
@@ -69,7 +64,7 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 			waitingPlayers[player.Level()] = player
 			// Start a timer to try starting a competition after the wait duration
 			go func() {
-				timer := time.NewTimer(MatchWaitDuration)
+				timer := time.NewTimer(config.MatchWaitDuration)
 				<-timer.C
 				err1 := tryStartCompetition(player)
 				if err1 != nil {
@@ -111,10 +106,10 @@ func tryStartCompetition(player *model.Player) error {
 		higherLevel := player.Level() + i
 		lowerLevel := player.Level() - i
 		var waitingPlayer *model.Player
-		if higherLevel <= model.MaxLevel {
+		if higherLevel <= config.MaxLevel {
 			waitingPlayer, playerFound = waitingPlayers[higherLevel]
 		}
-		if !playerFound && lowerLevel >= model.MinLevel {
+		if !playerFound && lowerLevel >= config.MinLevel {
 			waitingPlayer, playerFound = waitingPlayers[lowerLevel]
 		}
 		if playerFound {
@@ -133,7 +128,7 @@ func tryStartCompetition(player *model.Player) error {
 
 			break
 		}
-		if higherLevel >= model.MaxLevel && lowerLevel <= model.MinLevel {
+		if higherLevel >= config.MaxLevel && lowerLevel <= config.MinLevel {
 			break
 		}
 	}
@@ -149,7 +144,7 @@ func tryStartCompetition(player *model.Player) error {
 }
 
 func scheduleTickerForPlayer(player *model.Player) {
-	ticker := time.NewTicker(MatchRetryInterval)
+	ticker := time.NewTicker(config.MatchRetryInterval)
 	// TODO: Stop retry after a certain number of attempts or time limit
 	for range ticker.C {
 		err := tryStartCompetition(player)

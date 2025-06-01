@@ -2,16 +2,11 @@ package model
 
 import (
 	"errors"
+	"leaderboard/internal/config"
 	"leaderboard/internal/timeprovider"
 	"time"
 
 	"github.com/google/uuid"
-)
-
-const (
-	MaxPlayersForCompetetion int = 10
-	MinPlayersForCompetetion int = 2
-	CompetitionDuration          = 1 * time.Hour
 )
 
 type Competition struct {
@@ -34,13 +29,13 @@ func NewCompetition() *Competition {
 		createdAt: timeprovider.Current.Now(),
 		startedAt: time.Time{},
 		endsAt:    time.Time{},
-		players:   make([]CompetingPlayer, 0, MaxPlayersForCompetetion),
+		players:   make([]CompetingPlayer, 0, config.MaxPlayersForCompetetion),
 	}
 	return comp
 }
 
 func (c *Competition) AddPlayer(player *Player) error {
-	if len(c.players) >= MaxPlayersForCompetetion {
+	if len(c.players) >= config.MaxPlayersForCompetetion {
 		return ErrCompetitionFull
 	}
 	if !c.startedAt.IsZero() {
@@ -49,7 +44,7 @@ func (c *Competition) AddPlayer(player *Player) error {
 	c.players = append(c.players, *NewCompetingPlayer(player))
 	player.SetActiveCompetition(c)
 
-	if len(c.players) == MaxPlayersForCompetetion {
+	if len(c.players) == config.MaxPlayersForCompetetion {
 		if err := c.Start(); err != nil {
 			return err
 		}
@@ -62,11 +57,11 @@ func (c *Competition) Start() error {
 	if !c.startedAt.IsZero() {
 		return ErrCompetitionStarted
 	}
-	if len(c.players) < MinPlayersForCompetetion {
+	if len(c.players) < config.MinPlayersForCompetetion {
 		return ErrNotEnoughPlayers
 	}
 	c.startedAt = timeprovider.Current.Now()
-	c.endsAt = c.startedAt.Add(CompetitionDuration)
+	c.endsAt = c.startedAt.Add(config.CompetitionDuration)
 	return nil
 }
 

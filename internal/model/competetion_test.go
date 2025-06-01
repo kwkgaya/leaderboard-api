@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"leaderboard/internal/config"
 	"leaderboard/internal/timeprovider"
 
 	"github.com/google/uuid"
@@ -39,8 +40,8 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 	if competition.Players() == nil {
 		t.Error("expected Players slice to be initialized, got nil")
 	}
-	if cap(competition.Players()) != MaxPlayersForCompetetion {
-		t.Errorf("expected Players cap %d, got %d", MaxPlayersForCompetetion, cap(competition.Players()))
+	if cap(competition.Players()) != config.MaxPlayersForCompetetion {
+		t.Errorf("expected Players cap %d, got %d", config.MaxPlayersForCompetetion, cap(competition.Players()))
 	}
 	if len(competition.Players()) != 0 {
 		t.Errorf("expected Players len 0, got %d", len(competition.Players()))
@@ -73,7 +74,7 @@ func TestCompetition_AddPlayer_Success(t *testing.T) {
 
 func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 	competition := NewCompetition()
-	for i := 0; i < MaxPlayersForCompetetion; i++ {
+	for i := 0; i < config.MaxPlayersForCompetetion; i++ {
 		player := NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US")
 
 		err := competition.AddPlayer(player)
@@ -90,7 +91,7 @@ func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 
 func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
 	competition := NewCompetition()
-	for i := 0; i < MinPlayersForCompetetion; i++ {
+	for i := 0; i < config.MinPlayersForCompetetion; i++ {
 		err1 := competition.AddPlayer(NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US"))
 		if err1 != nil {
 			t.Fatalf("competetion.AddPlayer() returned error %v", err1)
@@ -141,7 +142,7 @@ func TestCompetition_Start_SuccessWithMinPlayers(t *testing.T) {
 	if !competition.StartedAt().Equal(fixedTime) {
 		t.Errorf("expected StartedAt %v, got %v", fixedTime, competition.StartedAt())
 	}
-	expectedEndsAt := fixedTime.Add(CompetitionDuration)
+	expectedEndsAt := fixedTime.Add(config.CompetitionDuration)
 	if !competition.EndsAt().Equal(expectedEndsAt) {
 		t.Errorf("expected EndsAt %v, got %v", expectedEndsAt, competition.EndsAt())
 	}
