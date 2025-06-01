@@ -1,10 +1,13 @@
 package leaderboard
 
+// TODO: Use interfaces instead of function varriables
+
 import (
 	"errors"
 	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
 	"leaderboard/internal/timeprovider"
+	"time"
 )
 
 var (
@@ -30,6 +33,18 @@ var AddScore = func(playerId string, points int) error {
 	return err
 }
 
+var GetLeaderboardForPlayer = func(playerId string) (*LeaderboardResponse, error) {
+	comp, err := getCompetition(playerId)
+	if err != nil {
+		return nil, err
+	}
+	if comp.StartedAt().IsZero() {
+		return nil, nil
+	} else {
+		return asLeaderboardResponse(comp), nil
+	}
+}
+
 func getCompetition(playerId string) (model.ICompetition, error) {
 	if playerId == "" {
 		return nil, ErrPlayerIdEmpty
@@ -44,4 +59,35 @@ func getCompetition(playerId string) (model.ICompetition, error) {
 	}
 
 	return comp, nil
+}
+
+func asLeaderboardResponse(comp model.ICompetition) *LeaderboardResponse {
+	if comp == nil {
+		return nil
+	}
+
+	leaderboard := make([]PlayerScore, 0, len(comp.PlayersMap()))
+	for _, player := range comp.Leaderboard() {
+		leaderboard = append(leaderboard, PlayerScore{
+			PlayerId: player.Player().Id(),
+			Score:    player.Score(),
+		})
+	}
+
+	return &LeaderboardResponse{
+		Id:          comp.Id(),
+		EndsAt:      comp.EndsAt(),
+		Leaderboard: leaderboard,
+	}
+}
+
+type LeaderboardResponse struct {
+	Id          string        `json:"leaderboard_id"`
+	EndsAt      time.Time     `json:"ends_at"`
+	Leaderboard []PlayerScore `json:"leaderboard"`
+}
+
+type PlayerScore struct {
+	PlayerId string `json:"player_id"`
+	Score    int    `json:"score"`
 }

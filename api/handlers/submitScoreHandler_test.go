@@ -119,7 +119,7 @@ func TestSubmitScoreHandler_ErrorCases_TableDriven(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockAddScoreFunc = func(playerID string, score int) error {
+			mockAddScoreFunc = func(_ string, _ int) error {
 				return tt.errorToReturn
 			}
 			req := httptest.NewRequest(http.MethodPost, "/leaderboard/score", bytes.NewReader(body))

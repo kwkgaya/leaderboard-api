@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"leaderboard/internal/leaderboard"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -15,18 +16,29 @@ import (
 // @Success      200  {object}  map[string]interface{}
 // @Router       /leaderboard/player/{playerID} [get]
 func PlayerLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	playerID := chi.URLParam(r, "playerID")
 
-	// Simulate fetching player leaderboard
-	response := map[string]string{
-		"playerID": playerID,
-		"message":  "Player leaderboard fetched successfully",
-	}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
+	response, err := leaderboard.GetLeaderboardForPlayer(playerID)
+	if err == leaderboard.ErrPlayerIdEmpty {
+		http.Error(w, "Player ID cannot be empty", http.StatusBadRequest)
+		return
+	} else if err == leaderboard.ErrPlayerNotFound {
+		http.Error(w, "Player not found", http.StatusBadRequest)
+		return
+	} else if err == leaderboard.ErrPlayerNotInCompetition {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		return
+	} else if err != nil {
+		http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
+		return
+	} else if encodingErr := json.NewEncoder(w).Encode(response); encodingErr != nil {
+		http.Error(w, fmt.Sprintf("Error encoding response: %v", encodingErr), http.StatusInternalServerError)
+		return
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 }
