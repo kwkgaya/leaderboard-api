@@ -6,6 +6,7 @@ import (
 	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
 	"testing"
+	"time"
 )
 
 func setup() {
@@ -15,6 +16,8 @@ func setup() {
 	storage.Players = map[string]*model.Player{}
 	storage.Competitions = map[string]*model.Competition{}
 
+	MatchWaitDuration = 30 * time.Second // Set a short wait duration for testing
+
 	storage.AddPlayers([]storage.NewPlayer{
 		{Id: "alice", CountryCode: "US", Level: 1},
 		{Id: "bob", CountryCode: "GB", Level: 2},
@@ -22,6 +25,9 @@ func setup() {
 		{Id: "alice_1", CountryCode: "IN", Level: 1},
 		{Id: "bob_1", CountryCode: "IN", Level: 2},
 		{Id: "carlos_1", CountryCode: "IN", Level: 3},
+		{Id: "alice_2", CountryCode: "IN", Level: 1},
+		{Id: "bob_2", CountryCode: "IN", Level: 2},
+		{Id: "carlos_2", CountryCode: "IN", Level: 3},
 	})
 }
 
@@ -158,10 +164,11 @@ func TestJoinCompetition_JoinMaxplayers_CompetetionStarted(t *testing.T) {
 					t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
 				}
 
-				// Test player1
-				player := storage.Players[fmt.Sprintf("player%v", 1)]
-				if player.ActiveCompetition() == nil || player.ActiveCompetition().Id() != comp.Id() {
-					t.Errorf("player %s should be in competition %s, got %v", playerId, comp.Id(), player.ActiveCompetition())
+				// Test player1 only one time
+				player1Id := fmt.Sprintf("player%v", 1)
+				player1 := storage.Players[player1Id]
+				if player1.ActiveCompetition() == nil || player1.ActiveCompetition().Id() != comp.Id() {
+					t.Errorf("player %s should be in competition %s, got %v", player1Id, comp.Id(), player.ActiveCompetition())
 				}
 			} else {
 				if !comp.StartedAt().IsZero() {
@@ -209,18 +216,117 @@ func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetetionStarted(t *testi
 	}
 }
 
-func TestJoinCompetition_MatchedwithTwoPlayers_CompetetionStarts(t *testing.T) {
+func TestJoinCompetition_MatchedwithTwoPlayers_CompetetionStartsAfterMatchWaitDuration(t *testing.T) {
 	setup()
+	MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
 
-	// First player joins, should be put in waiting list
-	comp, err := JoinCompetition("bob")
+	_, err := JoinCompetition("bob")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
-	// Second player joins, should create a competition
-	comp, err = JoinCompetition("bob_1")
+	comp, err := JoinCompetition("bob_1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if !comp.StartedAt().IsZero() {
+		t.Errorf("competition should not have started immediately, got started at %v", comp.StartedAt())
+	}
+
+	time.Sleep(1 * time.Second) // Wait for starting competition after MatchWaitDuration
+	if comp.StartedAt().IsZero() {
+		t.Errorf("competition should have started after %v, got started at %v", MatchWaitDuration, comp.StartedAt())
+	}
+	if len(comp.Players()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	}
+	if len(waitingCompetitions) != 0 {
+		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
+	}
+}
+
+func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetetionStartsAfterMatchWaitDuration(t *testing.T) {
+	setup()
+	MatchWaitDuration = 1 * time.Second // Set a short wait duration for testing
+
+	_, err := JoinCompetition("alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	_, err = JoinCompetition("bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	alice := storage.Players["alice"]
+	bob := storage.Players["bob"]
+
+	time.Sleep(2 * time.Second) // Wait for starting competition after MatchWaitDuration
+
+	if alice.ActiveCompetition() == nil {
+		t.Errorf("alice should be in a competition, got nil")
+	}
+	if bob.ActiveCompetition() == nil {
+		t.Errorf("bob should be in a competition, got nil")
+	}
+	if alice.ActiveCompetition().Id() != bob.ActiveCompetition().Id() {
+		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.ActiveCompetition().Id(), bob.ActiveCompetition().Id())
+	}
+	comp := alice.ActiveCompetition()
+
+	if comp.StartedAt().IsZero() {
+		t.Errorf("competition should have started after %v, got started at %v", MatchWaitDuration, comp.StartedAt())
+	}
+	if len(comp.Players()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	}
+	if len(waitingCompetitions) != 0 {
+		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
+	}
+}
+
+func TestJoinCompetition_CompetetionStartAfterWait_NewJoineesAddedToNewCompetetion(t *testing.T) {
+	setup()
+	MatchWaitDuration = 1500 * time.Millisecond // Set a short wait duration for testing
+
+	_, err := JoinCompetition("alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	_, err = JoinCompetition("bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	alice := storage.Players["alice"]
+
+	time.Sleep(2 * time.Second) // Wait for starting competition after MatchWaitDuration
+	comp1 := alice.ActiveCompetition()
+
+	alice1comp, err := JoinCompetition("alice_1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if alice1comp != nil {
+		t.Errorf("expected alice_1 to be waiting for a match, got competition %s", alice1comp.Id())
+	}
+
+	bob1comp, err := JoinCompetition("bob_1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if bob1comp != nil {
+		t.Errorf("expected bob_1 to be waiting for a match, got competition %s", bob1comp.Id())
+	}
+	if len(waitingCompetitions) != 0 {
+		t.Errorf("waitingCompetitions should have 0 competitions, got %d", len(waitingCompetitions))
+	}
+
+	alice2comp, err := JoinCompetition("alice_2")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if alice2comp == nil {
+		t.Fatalf("expected alice_2 to be added to competition, got nil")
+	}
+	if alice2comp.Id() == comp1.Id() {
+		t.Errorf("expected alice_2 to be added to a new competition, but added to old one %s", alice2comp.Id())
 	}
 }

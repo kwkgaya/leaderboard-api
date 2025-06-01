@@ -8,9 +8,10 @@ import (
 	"time"
 )
 
-const (
-	CompetitionWaitDuration = 30 * time.Second
-	MatchRetryInterval      = 1 * time.Second
+var (
+	// TODO: Read from config or env
+	MatchWaitDuration  = 30 * time.Second
+	MatchRetryInterval = 1 * time.Second
 )
 
 var (
@@ -28,6 +29,7 @@ var (
 	waitingCompetitions = make(map[uint]*model.Competition)
 )
 
+// JoinCompetition allows a player to join a competition.
 func JoinCompetition(playerID string) (*model.Competition, error) {
 	if playerID == "" {
 		return nil, ErrPlayerIdEmpty
@@ -47,6 +49,8 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 	comp, compFound := waitingCompetitions[player.Level()]
 	if compFound {
 		comp.AddPlayer(player)
+
+		// Competition may start immediately if it has enough players
 		if !comp.StartedAt().IsZero() {
 			delete(waitingCompetitions, player.Level())
 		}
@@ -59,17 +63,13 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 			if err != nil {
 				return nil, err
 			}
-			if !comp.StartedAt().IsZero() {
-				delete(waitingCompetitions, player.Level())
-			}
-			delete(waitingPlayers, player.Level())
 			return comp, nil
 		} else {
 			// No competition found, add player to waiting list
 			waitingPlayers[player.Level()] = player
 			// Start a timer to try starting a competition after the wait duration
 			go func() {
-				timer := time.NewTimer(CompetitionWaitDuration)
+				timer := time.NewTimer(MatchWaitDuration)
 				<-timer.C
 				err1 := tryStartCompetition(player)
 				if err1 != nil {
@@ -82,6 +82,8 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 	}
 }
 
+// TODO: This logic currently supports MinPlayersForCompetetion = 2 only
+// Needs some updates to support higher values of MinPlayersForCompetetion
 func tryStartCompetition(player *model.Player) error {
 	if player == nil {
 		panic("player cannot be nil")
@@ -100,10 +102,11 @@ func tryStartCompetition(player *model.Player) error {
 				return err
 			}
 		}
+		return nil
 	}
 
 	playerFound := false
-	for i := 0; ; i++ {
+	for i := 1; ; i++ {
 		// Try finding a matching player at closest levels
 		higherLevel := player.Level() + uint(i)
 		lowerLevel := player.Level() - uint(i)
@@ -119,12 +122,18 @@ func tryStartCompetition(player *model.Player) error {
 			if err != nil {
 				return err
 			}
-			delete(waitingCompetitions, player.Level())
+
 			err = comp.Start()
+			delete(waitingCompetitions, player.Level())
+			delete(waitingCompetitions, waitingPlayer.Level())
+
 			if err != nil {
 				return err
 			}
-		} else if higherLevel >= model.MaxLevel && lowerLevel <= model.MinLevel {
+
+			break
+		}
+		if higherLevel >= model.MaxLevel && lowerLevel <= model.MinLevel {
 			break
 		}
 	}
@@ -170,6 +179,9 @@ func createNewCompetetion(player *model.Player, waitingPlayer *model.Player) (*m
 		return nil, err
 	}
 	waitingCompetitions[waitingPlayer.Level()] = comp
+
 	delete(waitingPlayers, waitingPlayer.Level())
+	delete(waitingPlayers, player.Level())
+
 	return comp, nil
 }
