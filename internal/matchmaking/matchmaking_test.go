@@ -120,10 +120,10 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 	}
 }
 
-func TestJoinCompetition_JoinMaxplayers_CompetetionStarted(t *testing.T) {
+func TestJoinCompetition_JoinMaxplayers_CompetitionStarted(t *testing.T) {
 	setup()
 	var previousComp *model.Competition
-	for i := 1; i <= config.MaxPlayersForCompetetion; i++ {
+	for i := 1; i <= config.MaxPlayersForCompetition; i++ {
 		playerId := fmt.Sprintf("player%v", i)
 		storage.AddPlayers([]storage.NewPlayer{
 			{Id: playerId, CountryCode: "US", Level: 5},
@@ -158,9 +158,9 @@ func TestJoinCompetition_JoinMaxplayers_CompetetionStarted(t *testing.T) {
 				t.Errorf("player %s should be in competition %s, got %v", playerId, comp.Id(), player.ActiveCompetition())
 			}
 
-			if i == config.MaxPlayersForCompetetion {
+			if i == config.MaxPlayersForCompetition {
 				if comp.StartedAt().IsZero() {
-					t.Errorf("competition should have started after adding %d players, got started at %v", config.MaxPlayersForCompetetion, comp.StartedAt())
+					t.Errorf("competition should have started after adding %d players, got started at %v", config.MaxPlayersForCompetition, comp.StartedAt())
 				}
 				if len(waitingCompetitions) != 0 {
 					t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
@@ -184,10 +184,10 @@ func TestJoinCompetition_JoinMaxplayers_CompetetionStarted(t *testing.T) {
 	}
 }
 
-func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetetionStarted(t *testing.T) {
+func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetitionStarted(t *testing.T) {
 	setup()
 	var previousComp *model.Competition
-	for i := 1; i <= config.MaxPlayersForCompetetion+2; i++ {
+	for i := 1; i <= config.MaxPlayersForCompetition+2; i++ {
 		playerId := fmt.Sprintf("player%v", i)
 		storage.AddPlayers([]storage.NewPlayer{
 			{Id: playerId, CountryCode: "US", Level: 5},
@@ -195,19 +195,19 @@ func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetetionStarted(t *testi
 
 		comp, err := JoinCompetition(playerId)
 
-		if i == config.MaxPlayersForCompetetion {
+		if i == config.MaxPlayersForCompetition {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			previousComp = comp
-		} else if i == config.MaxPlayersForCompetetion+1 {
+		} else if i == config.MaxPlayersForCompetition+1 {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if comp != nil {
 				t.Fatalf("expected new competition to be not created for %s", playerId)
 			}
-		} else if i == config.MaxPlayersForCompetetion+2 {
+		} else if i == config.MaxPlayersForCompetition+2 {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -218,7 +218,7 @@ func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetetionStarted(t *testi
 	}
 }
 
-func TestJoinCompetition_MatchedwithTwoPlayers_CompetetionStartsAfterMatchWaitDuration(t *testing.T) {
+func TestJoinCompetition_MatchedwithTwoPlayers_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
 
@@ -246,7 +246,7 @@ func TestJoinCompetition_MatchedwithTwoPlayers_CompetetionStartsAfterMatchWaitDu
 	}
 }
 
-func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetetionStartsAfterMatchWaitDuration(t *testing.T) {
+func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 1 * time.Second // Set a short wait duration for testing
 
@@ -285,7 +285,7 @@ func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetetionStartsAfter
 	}
 }
 
-func TestJoinCompetition_MatchedwithTwoPlayersInMinandMaxLevels_CompetetionStartsAfterMatchWaitDuration(t *testing.T) {
+func TestJoinCompetition_MatchedwithTwoPlayersInMinandMaxLevels_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 1 * time.Second // Set a short wait duration for testing
 
@@ -324,7 +324,7 @@ func TestJoinCompetition_MatchedwithTwoPlayersInMinandMaxLevels_CompetetionStart
 	}
 }
 
-func TestJoinCompetition_CompetetionStartAfterWait_NewJoineesAddedToNewCompetetion(t *testing.T) {
+func TestJoinCompetition_CompetitionStartAfterWait_NewJoineesAddedToNewCompetition(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 1500 * time.Millisecond // Set a short wait duration for testing
 
@@ -372,7 +372,7 @@ func TestJoinCompetition_CompetetionStartAfterWait_NewJoineesAddedToNewCompeteti
 	}
 }
 
-func TestJoinCompetition_NotMatchedWithinWait_CompetetionStartsAfterNewUserJoin(t *testing.T) {
+func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
 

@@ -16,7 +16,7 @@ var (
 )
 var (
 	// This mutex synchronizes the access to the waiting players and competitions maps
-	// Also start competetion is accessed only by one goroutine at a time using this
+	// Also start competition is accessed only by one goroutine at a time using this
 	mutex = &sync.Mutex{}
 
 	// Maps to hold players and competitions waiting for a match
@@ -54,7 +54,7 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 		waitingPlayer, waitingPlayerFound := waitingPlayers[player.Level()]
 		if waitingPlayerFound {
 			// If there's already a waiting player at this level, create a new competition and add both players
-			comp, err := createNewCompetetion(player, waitingPlayer)
+			comp, err := createNewCompetition(player, waitingPlayer)
 			if err != nil {
 				return nil, err
 			}
@@ -77,8 +77,8 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 	}
 }
 
-// TODO: This logic currently supports MinPlayersForCompetetion = 2 only
-// Needs some updates to support higher values of MinPlayersForCompetetion
+// TODO: This logic currently supports MinPlayersForCompetition = 2 only
+// Needs some updates to support higher values of MinPlayersForCompetition
 func tryStartCompetition(player *model.Player) error {
 	if player == nil {
 		panic("player cannot be nil")
@@ -113,7 +113,7 @@ func tryStartCompetition(player *model.Player) error {
 			waitingPlayer, playerFound = waitingPlayers[lowerLevel]
 		}
 		if playerFound {
-			comp, err := createNewCompetetion(player, waitingPlayer)
+			comp, err := createNewCompetition(player, waitingPlayer)
 			if err != nil {
 				return err
 			}
@@ -158,7 +158,7 @@ func scheduleTickerForPlayer(player *model.Player) {
 	}
 }
 
-func createNewCompetetion(player *model.Player, waitingPlayer *model.Player) (*model.Competition, error) {
+func createNewCompetition(player *model.Player, waitingPlayer *model.Player) (*model.Competition, error) {
 	if player == nil || waitingPlayer == nil {
 		return nil, errors.New("both players must be provided")
 	}

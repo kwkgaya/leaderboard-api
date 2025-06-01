@@ -40,8 +40,8 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 	if competition.Players() == nil {
 		t.Error("expected Players slice to be initialized, got nil")
 	}
-	if cap(competition.Players()) != config.MaxPlayersForCompetetion {
-		t.Errorf("expected Players cap %d, got %d", config.MaxPlayersForCompetetion, cap(competition.Players()))
+	if cap(competition.Players()) != config.MaxPlayersForCompetition {
+		t.Errorf("expected Players cap %d, got %d", config.MaxPlayersForCompetition, cap(competition.Players()))
 	}
 	if len(competition.Players()) != 0 {
 		t.Errorf("expected Players len 0, got %d", len(competition.Players()))
@@ -74,7 +74,7 @@ func TestCompetition_AddPlayer_Success(t *testing.T) {
 
 func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 	competition := NewCompetition()
-	for i := 0; i < config.MaxPlayersForCompetetion; i++ {
+	for i := 0; i < config.MaxPlayersForCompetition; i++ {
 		player := NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US")
 
 		err := competition.AddPlayer(player)
@@ -91,15 +91,15 @@ func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 
 func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
 	competition := NewCompetition()
-	for i := 0; i < config.MinPlayersForCompetetion; i++ {
+	for i := 0; i < config.MinPlayersForCompetition; i++ {
 		err1 := competition.AddPlayer(NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US"))
 		if err1 != nil {
-			t.Fatalf("competetion.AddPlayer() returned error %v", err1)
+			t.Fatalf("competition.AddPlayer() returned error %v", err1)
 		}
 	}
 	err2 := competition.Start()
 	if err2 != nil {
-		t.Fatalf("competetion.Start() returned error %v", err2)
+		t.Fatalf("competition.Start() returned error %v", err2)
 	}
 
 	player := NewPlayer("p0", 1, "US")
@@ -111,7 +111,7 @@ func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
 
 func TestCompetition_Start_NotEnoughPlayers(t *testing.T) {
 	competition := NewCompetition()
-	// Only one player, less than MinPlayersForCompetetion
+	// Only one player, less than MinPlayersForCompetition
 	player := NewPlayer("p0", 1, "US")
 	_ = competition.AddPlayer(player)
 

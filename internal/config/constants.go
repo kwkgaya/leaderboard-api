@@ -10,8 +10,8 @@ var (
 )
 
 const (
-	MaxPlayersForCompetetion int = 10
-	MinPlayersForCompetetion int = 2
+	MaxPlayersForCompetition int = 10
+	MinPlayersForCompetition int = 2
 	CompetitionDuration          = 1 * time.Hour
 
 	MaxLevel = 10 // Maximum level a player can have

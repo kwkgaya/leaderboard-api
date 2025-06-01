@@ -20,7 +20,7 @@ type Competition struct {
 
 var ErrCompetitionFull = errors.New("competition is full, cannot add more players")
 var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
-var ErrNotEnoughPlayers = errors.New("competetion has less than two players")
+var ErrNotEnoughPlayers = errors.New("competition has less than two players")
 
 // TODO: Evaluate if we need to store the initial level
 func NewCompetition() *Competition {
@@ -29,13 +29,13 @@ func NewCompetition() *Competition {
 		createdAt: timeprovider.Current.Now(),
 		startedAt: time.Time{},
 		endsAt:    time.Time{},
-		players:   make([]CompetingPlayer, 0, config.MaxPlayersForCompetetion),
+		players:   make([]CompetingPlayer, 0, config.MaxPlayersForCompetition),
 	}
 	return comp
 }
 
 func (c *Competition) AddPlayer(player *Player) error {
-	if len(c.players) >= config.MaxPlayersForCompetetion {
+	if len(c.players) >= config.MaxPlayersForCompetition {
 		return ErrCompetitionFull
 	}
 	if !c.startedAt.IsZero() {
@@ -44,7 +44,7 @@ func (c *Competition) AddPlayer(player *Player) error {
 	c.players = append(c.players, *NewCompetingPlayer(player))
 	player.SetActiveCompetition(c)
 
-	if len(c.players) == config.MaxPlayersForCompetetion {
+	if len(c.players) == config.MaxPlayersForCompetition {
 		if err := c.Start(); err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func (c *Competition) Start() error {
 	if !c.startedAt.IsZero() {
 		return ErrCompetitionStarted
 	}
-	if len(c.players) < config.MinPlayersForCompetetion {
+	if len(c.players) < config.MinPlayersForCompetition {
 		return ErrNotEnoughPlayers
 	}
 	c.startedAt = timeprovider.Current.Now()
