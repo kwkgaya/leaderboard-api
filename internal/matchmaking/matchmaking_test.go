@@ -88,7 +88,6 @@ func TestJoinCompetition_Matchmaking(t *testing.T) {
 	if len(waitingCompetitions) != 1 {
 		t.Errorf("waitingCompetitions should have 1 competition, got %d", len(waitingCompetitions))
 	}
-	t.Logf("waitingCompetitions got %v", waitingCompetitions)
 }
 
 func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
@@ -111,7 +110,6 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 	if comp != nil {
 		t.Errorf("expected nil competition, got %v", comp)
 	}
-	t.Logf("waitingCompetitions got %v", waitingCompetitions)
 }
 
 func TestJoinCompetition_JoinMaxplayers_CompetetionStarted(t *testing.T) {
@@ -170,7 +168,7 @@ func TestJoinCompetition_JoinMaxplayers_CompetetionStarted(t *testing.T) {
 					t.Errorf("competition should not have started yet, got started at %v", comp.StartedAt())
 				}
 				if len(waitingCompetitions) != 1 {
-					t.Errorf("waitingCompetitions should have 1 competition, got %v", waitingCompetitions)
+					t.Errorf("waitingCompetitions should have 1 competition, got %d", len(waitingCompetitions))
 				}
 			}
 		}
@@ -192,7 +190,6 @@ func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetetionStarted(t *testi
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			t.Logf("waitingCompetitions got %v", waitingCompetitions)
 			previousComp = comp
 		} else if i == model.MaxPlayersForCompetetion+1 {
 			if err != nil {
@@ -208,7 +205,22 @@ func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetetionStarted(t *testi
 			if comp.Id() == previousComp.Id() {
 				t.Fatalf("expected new competition to be created for %s, got same competition %s", playerId, comp.Id())
 			}
-			t.Logf("waitingCompetitions got %v", waitingCompetitions)
 		}
+	}
+}
+
+func TestJoinCompetition_MatchedwithTwoPlayers_CompetetionStarts(t *testing.T) {
+	setup()
+
+	// First player joins, should be put in waiting list
+	comp, err := JoinCompetition("bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Second player joins, should create a competition
+	comp, err = JoinCompetition("bob_1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
