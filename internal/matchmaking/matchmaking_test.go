@@ -109,7 +109,7 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 	player := storage.Players["player3"]
 	// Simulate player already in a competition
 	fakeComp := model.NewCompetition()
-	player.SetActiveCompetition(fakeComp)
+	player.SetCompetition(fakeComp)
 
 	comp, err := JoinCompetition("player3")
 
@@ -155,8 +155,8 @@ func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 			previousComp = comp
 
 			player := storage.Players[playerId]
-			if player.ActiveCompetition() == nil || player.ActiveCompetition().Id() != comp.Id() {
-				t.Errorf("player %s should be in competition %s, got %v", playerId, comp.Id(), player.ActiveCompetition())
+			if player.Competition() == nil || player.Competition().Id() != comp.Id() {
+				t.Errorf("player %s should be in competition %s, got %v", playerId, comp.Id(), player.Competition())
 			}
 
 			if i == config.MaxPlayersForCompetition {
@@ -170,8 +170,8 @@ func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 				// Test player1 only one time
 				player1Id := fmt.Sprintf("player%v", 1)
 				player1 := storage.Players[player1Id]
-				if player1.ActiveCompetition() == nil || player1.ActiveCompetition().Id() != comp.Id() {
-					t.Errorf("player %s should be in competition %s, got %v", player1Id, comp.Id(), player.ActiveCompetition())
+				if player1.Competition() == nil || player1.Competition().Id() != comp.Id() {
+					t.Errorf("player %s should be in competition %s, got %v", player1Id, comp.Id(), player1.Competition())
 				}
 			} else {
 				if !comp.StartedAt().IsZero() {
@@ -264,16 +264,16 @@ func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetitionStartsAfter
 
 	time.Sleep(2 * time.Second) // Wait for starting competition after MatchWaitDuration
 
-	if alice.ActiveCompetition() == nil {
+	if alice.Competition() == nil {
 		t.Errorf("alice should be in a competition, got nil")
 	}
-	if bob.ActiveCompetition() == nil {
+	if bob.Competition() == nil {
 		t.Errorf("bob should be in a competition, got nil")
 	}
-	if alice.ActiveCompetition().Id() != bob.ActiveCompetition().Id() {
-		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.ActiveCompetition().Id(), bob.ActiveCompetition().Id())
+	if alice.Competition().Id() != bob.Competition().Id() {
+		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.Competition().Id(), bob.Competition().Id())
 	}
-	comp := alice.ActiveCompetition()
+	comp := alice.Competition()
 
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
@@ -303,16 +303,16 @@ func TestJoinCompetition_MatchedwithTwoPlayersInMinAndMaxLevels_CompetitionStart
 
 	time.Sleep(2 * time.Second) // Wait for starting competition after MatchWaitDuration
 
-	if alice.ActiveCompetition() == nil {
+	if alice.Competition() == nil {
 		t.Errorf("alice should be in a competition, got nil")
 	}
-	if ian.ActiveCompetition() == nil {
+	if ian.Competition() == nil {
 		t.Errorf("ian should be in a competition, got nil")
 	}
-	if alice.ActiveCompetition().Id() != ian.ActiveCompetition().Id() {
-		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.ActiveCompetition().Id(), ian.ActiveCompetition().Id())
+	if alice.Competition().Id() != ian.Competition().Id() {
+		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.Competition().Id(), ian.Competition().Id())
 	}
-	comp := alice.ActiveCompetition()
+	comp := alice.Competition()
 
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
@@ -340,7 +340,7 @@ func TestJoinCompetition_CompetitionStartAfterWait_NewJoineesAddedToNewCompetiti
 	alice := storage.Players["alice"]
 
 	time.Sleep(2 * time.Second) // Wait for starting competition after MatchWaitDuration
-	comp1 := alice.ActiveCompetition()
+	comp1 := alice.Competition()
 
 	alice1comp, err := JoinCompetition("alice_1")
 	if err != nil {
@@ -402,7 +402,7 @@ func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(
 	}
 }
 
-func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinToNewCompetetion(t *testing.T) {
+func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinToNewCompetition(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
 	config.CompetitionDuration = 1 * time.Second

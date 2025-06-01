@@ -51,7 +51,7 @@ func (c *Competition) AddPlayer(player *Player) error {
 		return ErrCompetitionStarted
 	}
 	c.players = append(c.players, *NewCompetingPlayer(player))
-	player.SetActiveCompetition(c)
+	player.SetCompetition(c)
 
 	if len(c.players) == config.MaxPlayersForCompetition {
 		if err := c.Start(); err != nil {

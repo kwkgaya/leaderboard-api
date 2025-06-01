@@ -63,8 +63,8 @@ func TestCompetition_AddPlayer_Success(t *testing.T) {
 	if competition.Players()[0].Player() != player {
 		t.Error("expected player to be added to Players slice")
 	}
-	if player.ActiveCompetition() != competition {
-		t.Error("expected player's ActiveCompetition to be set")
+	if player.Competition() != competition {
+		t.Error("expected player's Competition to be set")
 	}
 	// Score should be 0
 	if competition.Players()[0].Score() != 0 {

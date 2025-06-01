@@ -36,12 +36,12 @@ var JoinCompetition = func(playerID string) (model.ICompetition, error) {
 	if player == nil {
 		return nil, ErrPlayerNotFound
 	}
-	activeComp := player.ActiveCompetition()
+	activeComp := player.Competition()
 	if activeComp != nil {
 		// TODO: This is domain logic. Move to the model
 		if !activeComp.StartedAt().IsZero() && activeComp.EndsAt().Before(timeprovider.Current.Now()) {
 			// If the active competition has ended, reset the player's active competition
-			player.SetActiveCompetition(nil)
+			player.SetCompetition(nil)
 		} else {
 			return nil, ErrPlayerAlreadyInCompetition
 		}
@@ -93,9 +93,9 @@ func tryStartCompetition(player *model.Player) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if player.ActiveCompetition() != nil {
+	if player.Competition() != nil {
 		// Player is already in a competition. Start it if not already started
-		activeComp := player.ActiveCompetition()
+		activeComp := player.Competition()
 		if activeComp.StartedAt().IsZero() {
 			err := activeComp.Start()
 			delete(waitingCompetitions, player.Level())
@@ -157,7 +157,7 @@ func scheduleTickerForPlayer(player *model.Player) {
 		if err != nil {
 			panic(err) // Handle error appropriately in production code
 		}
-		if player.ActiveCompetition() != nil {
+		if player.Competition() != nil {
 			ticker.Stop()
 			return
 		}
