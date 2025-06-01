@@ -4,6 +4,7 @@ import (
 	"errors"
 	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,11 @@ var (
 	ErrPlayerAlreadyInCompetition = errors.New("player is already in a competition")
 )
 var (
+	// This mutex synchronizes the access to the waiting players and competitions maps
+	// Also start competetion is accessed only by one goroutine at a time using this
+	mutex = &sync.Mutex{}
+
+	// Maps to hold players and competitions waiting for a match
 	waitingPlayers      = make(map[uint]*model.Player)
 	waitingCompetitions = make(map[uint]*model.Competition)
 )
@@ -26,6 +32,8 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 	if playerID == "" {
 		return nil, ErrPlayerIdEmpty
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	player := storage.Players[playerID]
 	if player == nil {
@@ -78,6 +86,10 @@ func tryStartCompetition(player *model.Player) error {
 	if player == nil {
 		panic("player cannot be nil")
 	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	if player.ActiveCompetition() != nil {
 		// Player is already in a competition. Start it if not already started
 		activeComp := player.ActiveCompetition()
@@ -135,7 +147,7 @@ func scheduleTickerForPlayer(player *model.Player) {
 		if err != nil {
 			panic(err) // Handle error appropriately in production code
 		}
-		if player.ActiveCompetition() != nil && !player.ActiveCompetition().StartedAt().IsZero() {
+		if player.ActiveCompetition() != nil {
 			ticker.Stop()
 			return
 		}
