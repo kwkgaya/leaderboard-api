@@ -1,25 +1,14 @@
 package model
 
-import (
-	"leaderboard/internal/timeprovider"
-	"time"
-)
-
 type CompetingPlayer struct {
-	player    *Player
-	score     int
-	createdAt time.Time
+	player *Player
+	score  int
 }
 
 func NewCompetingPlayer(player *Player) *CompetingPlayer {
 	return &CompetingPlayer{
-		player:    player,
-		createdAt: timeprovider.Current.Now(),
-		score:     0}
-}
-
-func (p *CompetingPlayer) CreatedAt() time.Time {
-	return p.createdAt
+		player: player,
+		score:  0}
 }
 
 func (p *CompetingPlayer) Score() int {

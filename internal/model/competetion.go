@@ -4,6 +4,10 @@ import (
 	"errors"
 	"leaderboard/internal/config"
 	"leaderboard/internal/timeprovider"
+	"maps"
+	"slices"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,22 +19,30 @@ type ICompetition interface {
 	CreatedAt() time.Time
 	StartedAt() time.Time
 	EndsAt() time.Time
-	Players() []CompetingPlayer
+	PlayersMap() map[string]*CompetingPlayer
+	Leaderboard() []*CompetingPlayer
 	AddPlayer(player *Player) error
 	Start() error
+	AddScore(player *Player, points int) error
 }
 
 type Competition struct {
-	id        string
-	createdAt time.Time
-	startedAt time.Time
-	endsAt    time.Time
-	players   []CompetingPlayer
+	id            string
+	createdAt     time.Time
+	startedAt     time.Time
+	endsAt        time.Time
+	players       map[string]*CompetingPlayer
+	sortedPlayers []*CompetingPlayer
+	scoreMutex    sync.Mutex
 }
 
 var ErrCompetitionFull = errors.New("competition is full, cannot add more players")
 var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
 var ErrNotEnoughPlayers = errors.New("competition don't have enough players to start")
+
+var ErrPlayerNil = errors.New("player cannot be nil")
+var ErrPlayerNotFound = errors.New("player not found in competition")
+var ErrPointsNegative = errors.New("points cannot be negative")
 
 func NewCompetition() ICompetition {
 	var comp = &Competition{
@@ -38,19 +50,25 @@ func NewCompetition() ICompetition {
 		createdAt: timeprovider.Current.Now(),
 		startedAt: time.Time{},
 		endsAt:    time.Time{},
-		players:   make([]CompetingPlayer, 0, config.MaxPlayersForCompetition),
+		players:   make(map[string]*CompetingPlayer, config.MaxPlayersForCompetition),
 	}
 	return comp
 }
 
 func (c *Competition) AddPlayer(player *Player) error {
+	if player == nil {
+		return ErrPlayerNil
+	}
 	if len(c.players) >= config.MaxPlayersForCompetition {
 		return ErrCompetitionFull
 	}
 	if !c.startedAt.IsZero() {
 		return ErrCompetitionStarted
 	}
-	c.players = append(c.players, *NewCompetingPlayer(player))
+	c.players[player.Id()] = &CompetingPlayer{
+		player: player,
+		score:  0,
+	}
 	player.SetCompetition(c)
 
 	if len(c.players) == config.MaxPlayersForCompetition {
@@ -69,9 +87,37 @@ func (c *Competition) Start() error {
 	if len(c.players) < config.MinPlayersForCompetition {
 		return ErrNotEnoughPlayers
 	}
+	c.sortedPlayers = slices.Collect(maps.Values(c.players))
+
 	c.startedAt = timeprovider.Current.Now()
 	c.endsAt = c.startedAt.Add(config.CompetitionDuration)
 	return nil
+}
+
+func (c *Competition) AddScore(player *Player, points int) error {
+	if player == nil {
+		return ErrPlayerNil
+	}
+	if points < 0 {
+		return ErrPointsNegative
+	}
+
+	if compPlayer, found := c.players[player.Id()]; found {
+		c.scoreMutex.Lock()
+		defer c.scoreMutex.Unlock()
+
+		compPlayer.AddScore(points)
+		slices.SortStableFunc(c.sortedPlayers, func(a, b *CompetingPlayer) int {
+			if a.Score() == b.Score() {
+				return strings.Compare(a.Player().Id(), b.Player().Id())
+			} else {
+				return b.Score() - a.Score()
+			}
+		})
+		return nil
+	} else {
+		return ErrPlayerNotFound
+	}
 }
 
 func (c *Competition) Id() string {
@@ -88,6 +134,9 @@ func (c *Competition) StartedAt() time.Time {
 func (c *Competition) EndsAt() time.Time {
 	return c.endsAt
 }
-func (c *Competition) Players() []CompetingPlayer {
+func (c *Competition) PlayersMap() map[string]*CompetingPlayer {
 	return c.players
+}
+func (c *Competition) Leaderboard() []*CompetingPlayer {
+	return c.sortedPlayers
 }

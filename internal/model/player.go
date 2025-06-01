@@ -6,10 +6,10 @@ import (
 )
 
 type Player struct {
-	id                string
-	level             int
-	countryCode       string
-	activeCompetition ICompetition
+	id          string
+	level       int
+	countryCode string
+	competition ICompetition
 }
 
 func NewPlayer(id string, level int, countryCode string) *Player {
@@ -32,8 +32,8 @@ func (p *Player) CountryCode() string {
 	return p.countryCode
 }
 func (p *Player) Competition() ICompetition {
-	return p.activeCompetition
+	return p.competition
 }
 func (p *Player) SetCompetition(c ICompetition) {
-	p.activeCompetition = c
+	p.competition = c
 }

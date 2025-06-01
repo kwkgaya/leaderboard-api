@@ -85,8 +85,8 @@ func TestJoinCompetition_Matchmaking(t *testing.T) {
 	if comp == nil {
 		t.Fatalf("expected competition to be created for bob_1")
 	}
-	if len(comp.Players()) != 2 {
-		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	if len(comp.PlayersMap()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.PlayersMap()))
 	}
 	if waitingPlayers[2] != nil {
 		t.Errorf("waitingPlayers at level 2 should be empty after match")
@@ -146,8 +146,8 @@ func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 			if comp == nil {
 				t.Fatalf("expected competition to be returned for %s", playerId)
 			}
-			if len(comp.Players()) != i {
-				t.Errorf("competition should have %d players, got %d", i, len(comp.Players()))
+			if len(comp.PlayersMap()) != i {
+				t.Errorf("competition should have %d players, got %d", i, len(comp.PlayersMap()))
 			}
 			if previousComp != nil && comp.Id() != previousComp.Id() {
 				t.Errorf("expected same competition for player %s, got different competition %s", playerId, comp.Id())
@@ -239,8 +239,8 @@ func TestJoinCompetition_MatchedwithTwoPlayers_CompetitionStartsAfterMatchWaitDu
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
 	}
-	if len(comp.Players()) != 2 {
-		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	if len(comp.PlayersMap()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.PlayersMap()))
 	}
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
@@ -278,8 +278,8 @@ func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetitionStartsAfter
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
 	}
-	if len(comp.Players()) != 2 {
-		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	if len(comp.PlayersMap()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.PlayersMap()))
 	}
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
@@ -317,8 +317,8 @@ func TestJoinCompetition_MatchedwithTwoPlayersInMinAndMaxLevels_CompetitionStart
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
 	}
-	if len(comp.Players()) != 2 {
-		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	if len(comp.PlayersMap()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.PlayersMap()))
 	}
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
@@ -394,8 +394,11 @@ func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
 	}
-	if len(comp.Players()) != 2 {
-		t.Errorf("competition should have 2 players, got %d", len(comp.Players()))
+	if len(comp.PlayersMap()) != 2 {
+		t.Errorf("competition should have 2 players, got %d", len(comp.PlayersMap()))
+	}
+	if len(comp.Leaderboard()) != 2 {
+		t.Errorf("competition should have 2 players in leaderboard, got %d", len(comp.Leaderboard()))
 	}
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)

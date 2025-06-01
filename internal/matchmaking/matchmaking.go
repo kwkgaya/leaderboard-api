@@ -32,15 +32,15 @@ var JoinCompetition = func(playerID string) (model.ICompetition, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	player := storage.Players[playerID]
-	if player == nil {
+	player, playerFound := storage.Players[playerID]
+	if !playerFound {
 		return nil, ErrPlayerNotFound
 	}
-	activeComp := player.Competition()
-	if activeComp != nil {
+	comp := player.Competition()
+	if comp != nil {
 		// TODO: This is domain logic. Move to the model
-		if !activeComp.StartedAt().IsZero() && activeComp.EndsAt().Before(timeprovider.Current.Now()) {
-			// If the active competition has ended, reset the player's active competition
+		if !comp.StartedAt().IsZero() && comp.EndsAt().Before(timeprovider.Current.Now()) {
+			// If the competition has ended, reset the player's competition
 			player.SetCompetition(nil)
 		} else {
 			return nil, ErrPlayerAlreadyInCompetition
@@ -95,9 +95,9 @@ func tryStartCompetition(player *model.Player) error {
 
 	if player.Competition() != nil {
 		// Player is already in a competition. Start it if not already started
-		activeComp := player.Competition()
-		if activeComp.StartedAt().IsZero() {
-			err := activeComp.Start()
+		comp := player.Competition()
+		if comp.StartedAt().IsZero() {
+			err := comp.Start()
 			delete(waitingCompetitions, player.Level())
 			if err != nil {
 				return err
