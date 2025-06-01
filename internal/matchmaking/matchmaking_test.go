@@ -17,7 +17,8 @@ func setup() {
 	storage.Players = map[string]*model.Player{}
 	storage.Competitions = map[string]*model.Competition{}
 
-	config.MatchWaitDuration = 30 * time.Second // Set a short wait duration for testing
+	config.MatchWaitDuration = 30 * time.Second
+	config.CompetitionDuration = 1 * time.Hour
 
 	storage.AddPlayers([]storage.NewPlayer{
 		{Id: "alice", CountryCode: "US", Level: 1},
@@ -120,7 +121,7 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 	}
 }
 
-func TestJoinCompetition_JoinMaxplayers_CompetitionStarted(t *testing.T) {
+func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 	setup()
 	var previousComp *model.Competition
 	for i := 1; i <= config.MaxPlayersForCompetition; i++ {
@@ -184,7 +185,7 @@ func TestJoinCompetition_JoinMaxplayers_CompetitionStarted(t *testing.T) {
 	}
 }
 
-func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetitionStarted(t *testing.T) {
+func TestJoinCompetition_JoinMaxplayersAndTwoMore_NewCompetitionStarts(t *testing.T) {
 	setup()
 	var previousComp *model.Competition
 	for i := 1; i <= config.MaxPlayersForCompetition+2; i++ {
@@ -285,7 +286,7 @@ func TestJoinCompetition_MatchedwithTwoPlayersInTwoLevels_CompetitionStartsAfter
 	}
 }
 
-func TestJoinCompetition_MatchedwithTwoPlayersInMinandMaxLevels_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
+func TestJoinCompetition_MatchedwithTwoPlayersInMinAndMaxLevels_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 1 * time.Second // Set a short wait duration for testing
 
@@ -398,5 +399,34 @@ func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(
 	}
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
+	}
+}
+
+func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinToNewCompetetion(t *testing.T) {
+	setup()
+	config.MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
+	config.CompetitionDuration = 1 * time.Second
+
+	_, _ = JoinCompetition("bob")
+	comp1, _ := JoinCompetition("bob_1")
+
+	time.Sleep(1500 * time.Millisecond) // Wait for starting and ending
+
+	_, _ = JoinCompetition("bob_2")
+	comp2, err := JoinCompetition("bob_1")
+
+	time.Sleep(1 * time.Second) // Wait for starting
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if comp1 == nil {
+		t.Fatalf("expected competition 1 to be created for bob_1, got nil")
+	}
+	if comp2 == nil {
+		t.Fatalf("expected competition 2 to be created for bob_1, got nil")
+	}
+	if comp1.Id() == comp2.Id() {
+		t.Errorf("expected different competitions for bob_1, got same competition %s", comp1.Id())
 	}
 }

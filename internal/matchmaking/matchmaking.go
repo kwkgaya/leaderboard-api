@@ -5,6 +5,7 @@ import (
 	"leaderboard/internal/config"
 	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
+	"leaderboard/internal/timeprovider"
 	"sync"
 	"time"
 )
@@ -24,7 +25,6 @@ var (
 	waitingCompetitions = make(map[int]*model.Competition)
 )
 
-// JoinCompetition allows a player to join a competition.
 func JoinCompetition(playerID string) (*model.Competition, error) {
 	if playerID == "" {
 		return nil, ErrPlayerIdEmpty
@@ -36,9 +36,15 @@ func JoinCompetition(playerID string) (*model.Competition, error) {
 	if player == nil {
 		return nil, ErrPlayerNotFound
 	}
-
-	if player.ActiveCompetition() != nil {
-		return nil, ErrPlayerAlreadyInCompetition
+	activeComp := player.ActiveCompetition()
+	if activeComp != nil {
+		// TODO: This is domain logic. Move to the model
+		if !activeComp.StartedAt().IsZero() && activeComp.EndsAt().Before(timeprovider.Current.Now()) {
+			// If the active competition has ended, reset the player's active competition
+			player.SetActiveCompetition(nil)
+		} else {
+			return nil, ErrPlayerAlreadyInCompetition
+		}
 	}
 
 	comp, compFound := waitingCompetitions[player.Level()]
