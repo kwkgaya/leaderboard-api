@@ -27,6 +27,7 @@ var ErrCompetitionFull = errors.New("competition is full, cannot add more player
 var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
 var ErrNotEnoughPlayers = errors.New("competetion has less than two players")
 
+// TODO: Evaluate if we need to store the initial level
 func NewCompetition(initialLevel uint) *Competition {
 	var comp = &Competition{
 		id:           uuid.New().String(),

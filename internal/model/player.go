@@ -1,5 +1,10 @@
 package model
 
+const (
+	MaxLevel = 10 // Maximum level a player can have
+	MinLevel = 1  // Minimum level a player can have
+)
+
 type Player struct {
 	id                string
 	level             uint
