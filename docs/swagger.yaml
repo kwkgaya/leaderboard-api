@@ -1,0 +1,87 @@
+info:
+  contact: {}
+paths:
+  /leaderboard/{leaderboardID}:
+    get:
+      description: Get competition by ID
+      parameters:
+      - description: Leaderboard ID
+        in: path
+        name: leaderboardID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not found
+          schema:
+            type: string
+      summary: Get competition leaderboard
+  /leaderboard/join:
+    post:
+      description: Match a player to a competition or enqueue them
+      parameters:
+      - description: Player ID
+        in: query
+        name: player_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Player ID is empty or player not found
+          schema:
+            type: string
+        "409":
+          description: Player already in competition
+          schema:
+            type: string
+      summary: Join a leaderboard competition
+  /leaderboard/player/{playerID}:
+    get:
+      description: Get current or last competition for a player
+      parameters:
+      - description: Player ID
+        in: path
+        name: playerID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get player leaderboard
+  /leaderboard/score:
+    post:
+      consumes:
+      - application/json
+      description: Add score to the player's current competition
+      parameters:
+      - description: Score submission
+        in: body
+        name: score
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "409":
+          description: 'Conflict: no active competition'
+          schema:
+            type: string
+      summary: Submit score
+swagger: "2.0"
