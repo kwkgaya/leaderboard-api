@@ -27,18 +27,8 @@ func SubmitScoreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.PlayerID == "" {
-		http.Error(w, "Player ID is required", http.StatusBadRequest)
-		return
-	}
-	if req.Score < 0 {
-		http.Error(w, "Score must be a non-negative integer", http.StatusBadRequest)
-	}
-
-	// Add score to the player's competing record
 	err := leaderboard.AddScore(req.PlayerID, req.Score)
 	if err == nil {
-		// Successfully added score
 		w.WriteHeader(http.StatusOK)
 		return
 	} else if err == leaderboard.ErrCompetitionEnded {
@@ -54,7 +44,7 @@ func SubmitScoreHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Player ID cannot be empty", http.StatusBadRequest)
 		return
 	} else if err == leaderboard.ErrPlayerNotFound {
-		http.Error(w, "Player not found", http.StatusNotFound)
+		http.Error(w, "Player not found", http.StatusBadRequest)
 		return
 	} else {
 		// Some other error occurred

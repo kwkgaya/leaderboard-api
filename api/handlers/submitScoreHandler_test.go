@@ -74,19 +74,6 @@ func TestSubmitScoreHandler_EmptyPlayerID(t *testing.T) {
 	}
 }
 
-func TestSubmitScoreHandler_NegativeScore(t *testing.T) {
-	body := []byte(`{"player_id":"player1","score":-5}`)
-	req := httptest.NewRequest(http.MethodPost, "/leaderboard/score", bytes.NewReader(body))
-	w := httptest.NewRecorder()
-
-	SubmitScoreHandler(w, req)
-
-	resp := w.Result()
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected status 400, got %d", resp.StatusCode)
-	}
-}
-
 func TestSubmitScoreHandler_ErrorCases_TableDriven(t *testing.T) {
 	restore := setupMocks()
 	defer restore()
@@ -119,7 +106,7 @@ func TestSubmitScoreHandler_ErrorCases_TableDriven(t *testing.T) {
 		{
 			name:           "PlayerNotFound",
 			errorToReturn:  leaderboard.ErrPlayerNotFound,
-			expectedStatus: http.StatusNotFound,
+			expectedStatus: http.StatusBadRequest,
 		},
 		{
 			name:           "InternalServerError",

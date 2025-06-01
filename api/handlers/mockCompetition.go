@@ -32,6 +32,6 @@ func (m *mockCompetition) Start() error {
 	m.endsAt = m.startedAt.Add(config.CompetitionDuration)
 	return nil
 }
-func (m *mockCompetition) AddScore(player *model.Player, points int) error {
+func (m *mockCompetition) AddScore(playerId string, points int) error {
 	return nil
 }

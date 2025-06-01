@@ -2,6 +2,7 @@ package leaderboard
 
 import (
 	"errors"
+	"leaderboard/internal/model"
 	"leaderboard/internal/storage"
 	"leaderboard/internal/timeprovider"
 )
@@ -14,27 +15,33 @@ var (
 	ErrPlayerNotInCompetition = errors.New("player is not in a competition, cannot add score")
 )
 
-var AddScore = func(playerID string, points int) error {
-	if playerID == "" {
-		return ErrPlayerIdEmpty
+var AddScore = func(playerId string, points int) error {
+	comp, err := getCompetition(playerId)
+	if err != nil {
+		return err
 	}
-	player, playerFound := storage.Players[playerID]
+	if comp.StartedAt().IsZero() {
+		return ErrCompetitionNotStarted
+	} else if comp.EndsAt().Before(timeprovider.Current.Now()) {
+		return ErrCompetitionEnded
+	}
 
-	if !playerFound {
-		return ErrPlayerNotFound
+	err = comp.AddScore(playerId, points)
+	return err
+}
+
+func getCompetition(playerId string) (model.ICompetition, error) {
+	if playerId == "" {
+		return nil, ErrPlayerIdEmpty
+	}
+	player, found := storage.Players[playerId]
+	if !found {
+		return nil, ErrPlayerNotFound
 	}
 	comp := player.Competition()
-	if comp != nil {
-		// TODO: This is domain logic. Move to the model
-		if comp.StartedAt().IsZero() {
-			return ErrCompetitionNotStarted
-		} else if comp.EndsAt().Before(timeprovider.Current.Now()) {
-			return ErrCompetitionEnded
-		}
-	} else {
-		return ErrPlayerNotInCompetition
+	if comp == nil {
+		return nil, ErrPlayerNotInCompetition
 	}
 
-	err := comp.AddScore(player, points)
-	return err
+	return comp, nil
 }

@@ -23,7 +23,7 @@ type ICompetition interface {
 	Leaderboard() []*CompetingPlayer
 	AddPlayer(player *Player) error
 	Start() error
-	AddScore(player *Player, points int) error
+	AddScore(playerId string, points int) error
 }
 
 type Competition struct {
@@ -40,7 +40,7 @@ var ErrCompetitionFull = errors.New("competition is full, cannot add more player
 var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
 var ErrNotEnoughPlayers = errors.New("competition don't have enough players to start")
 
-var ErrPlayerNil = errors.New("player cannot be nil")
+var ErrPlayerIdEmpty = errors.New("player ID cannot be empty")
 var ErrPlayerNotFound = errors.New("player not found in competition")
 var ErrPointsNegative = errors.New("points cannot be negative")
 
@@ -57,7 +57,7 @@ func NewCompetition() ICompetition {
 
 func (c *Competition) AddPlayer(player *Player) error {
 	if player == nil {
-		return ErrPlayerNil
+		return ErrPlayerIdEmpty
 	}
 	if len(c.players) >= config.MaxPlayersForCompetition {
 		return ErrCompetitionFull
@@ -94,15 +94,15 @@ func (c *Competition) Start() error {
 	return nil
 }
 
-func (c *Competition) AddScore(player *Player, points int) error {
-	if player == nil {
-		return ErrPlayerNil
+func (c *Competition) AddScore(playerId string, points int) error {
+	if playerId == "" {
+		return ErrPlayerIdEmpty
 	}
 	if points < 0 {
 		return ErrPointsNegative
 	}
 
-	if compPlayer, found := c.players[player.Id()]; found {
+	if compPlayer, found := c.players[playerId]; found {
 		c.scoreMutex.Lock()
 		defer c.scoreMutex.Unlock()
 

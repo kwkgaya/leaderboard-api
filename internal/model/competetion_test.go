@@ -176,7 +176,7 @@ func TestCompetition_AddScore_Success(t *testing.T) {
 		t.Fatalf("unexpected error adding player: %v", err)
 	}
 
-	err = competition.AddScore(player, 10)
+	err = competition.AddScore(player.id, 10)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
@@ -189,11 +189,11 @@ func TestCompetition_AddScore_Success(t *testing.T) {
 	}
 }
 
-func TestCompetition_AddScore_PlayerNil(t *testing.T) {
+func TestCompetition_AddScore_PlayerEmptyString(t *testing.T) {
 	competition := NewCompetition()
-	err := competition.AddScore(nil, 5)
-	if err != ErrPlayerNil {
-		t.Errorf("expected ErrPlayerNil, got %v", err)
+	err := competition.AddScore("", 5)
+	if err != ErrPlayerIdEmpty {
+		t.Errorf("expected ErrPlayerIdEmpty, got %v", err)
 	}
 }
 
@@ -202,7 +202,7 @@ func TestCompetition_AddScore_PointsNegative(t *testing.T) {
 	player := NewPlayer("p1", 1, "US")
 	_ = competition.AddPlayer(player)
 
-	err := competition.AddScore(player, -1)
+	err := competition.AddScore(player.id, -1)
 	if err != ErrPointsNegative {
 		t.Errorf("expected ErrPointsNegative, got %v", err)
 	}
@@ -213,7 +213,7 @@ func TestCompetition_AddScore_PlayerNotFound(t *testing.T) {
 	player := NewPlayer("p1", 1, "US")
 	// Not adding player to competition
 
-	err := competition.AddScore(player, 5)
+	err := competition.AddScore(player.id, 5)
 	if err != ErrPlayerNotFound {
 		t.Errorf("expected ErrPlayerNotFound, got %v", err)
 	}
@@ -227,8 +227,8 @@ func TestCompetition_AddScore_SortLeaderboardAccordingToScore(t *testing.T) {
 	_ = competition.AddPlayer(player2)
 	_ = competition.Start()
 
-	_ = competition.AddScore(player1, 10)
-	_ = competition.AddScore(player2, 20)
+	_ = competition.AddScore(player1.id, 10)
+	_ = competition.AddScore(player2.id, 20)
 
 	leaderboard := competition.Leaderboard()
 	if len(leaderboard) != 2 {
@@ -238,7 +238,7 @@ func TestCompetition_AddScore_SortLeaderboardAccordingToScore(t *testing.T) {
 		t.Errorf("expected Leaderboard()[0] = b, Leaderboard()[1] = a")
 	}
 	// Now add more score to player1 so they overtake player2
-	_ = competition.AddScore(player1, 15) // player1 now has 25
+	_ = competition.AddScore(player1.id, 15) // player1 now has 25
 
 	leaderboard = competition.Leaderboard()
 	if leaderboard[0].Player().Id() != "a" || leaderboard[1].Player().Id() != "b" {
@@ -256,9 +256,9 @@ func TestCompetition_AddScore_SortLeaderboardAccordingToScoreThenName(t *testing
 	_ = competition.AddPlayer(player3)
 	_ = competition.Start()
 
-	_ = competition.AddScore(player1, 10)
-	_ = competition.AddScore(player2, 20)
-	_ = competition.AddScore(player3, 30)
+	_ = competition.AddScore(player1.id, 10)
+	_ = competition.AddScore(player2.id, 20)
+	_ = competition.AddScore(player3.id, 30)
 
 	leaderboard := competition.Leaderboard()
 	if len(leaderboard) != 3 {
@@ -268,15 +268,15 @@ func TestCompetition_AddScore_SortLeaderboardAccordingToScoreThenName(t *testing
 		t.Errorf("expected Leaderboard()[0] = c, Leaderboard()[1] = b, Leaderboard()[2] = a")
 	}
 	// Now add more score to player1 so they are equal to player3
-	_ = competition.AddScore(player1, 20)
+	_ = competition.AddScore(player1.id, 20)
 	leaderboard = competition.Leaderboard()
 
 	if leaderboard[0].Player().Id() != "a" || leaderboard[1].Player().Id() != "c" || leaderboard[2].Player().Id() != "b" {
 		t.Errorf("expected Leaderboard()[0] = a, Leaderboard()[1] = c, Leaderboard()[2] = b after score update")
 	}
 
-	_ = competition.AddScore(player2, 20)
-	_ = competition.AddScore(player3, 10)
+	_ = competition.AddScore(player2.id, 20)
+	_ = competition.AddScore(player3.id, 10)
 	leaderboard = competition.Leaderboard()
 
 	if leaderboard[0].Player().Id() != "b" || leaderboard[1].Player().Id() != "c" || leaderboard[2].Player().Id() != "a" {
