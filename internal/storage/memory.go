@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"leaderboard/internal/model"
 )
 
@@ -12,7 +13,12 @@ var (
 
 // TODO: Define an interface
 func LoadDummyPlayers() {
-	AddPlayers(dummyPlayers[:])
+	var dummyPlayers []NewPlayer
+	err := json.Unmarshal([]byte(dummyPlayersJson), &dummyPlayers)
+	if err != nil {
+		panic("Failed to load dummy players: " + err.Error())
+	}
+	AddPlayers(dummyPlayers)
 }
 
 func AddPlayers(players []NewPlayer) {
@@ -23,45 +29,113 @@ func AddPlayers(players []NewPlayer) {
 }
 
 type NewPlayer struct {
-	Id          string
-	CountryCode string
-	Level       int
+	Id          string `json:"id"`
+	CountryCode string `json:"country_code"`
+	Level       int    `json:"level"`
 }
 
-var dummyPlayers = [...]NewPlayer{
-	{"alice_smith", "US", 7}, {"bob_jones", "GB", 6}, {"carlos_mendez", "MX", 3},
-	{"diana_lee", "KR", 9}, {"ethan_wong", "SG", 5}, {"fatima_khan", "PK", 8},
-	{"george_nash", "AU", 4}, {"hana_tanaka", "JP", 6}, {"ian_clark", "CA", 7},
-	{"julia_roberts", "US", 3}, {"kevin_singh", "IN", 5}, {"laura_gomez", "ES", 2},
-	{"mohamed_fahmy", "EG", 8}, {"natalie_cho", "KR", 7}, {"oliver_klein", "DE", 6},
-	{"paula_martins", "BR", 4}, {"quentin_diaz", "AR", 3}, {"rashid_ali", "AE", 7},
-	{"sofia_perez", "CO", 5}, {"tommy_nilsen", "NO", 6}, {"ursula_meier", "CH", 4},
-	{"viktor_ivanov", "RU", 9}, {"wanda_nowak", "PL", 2}, {"xinyi_zhang", "CN", 7},
-	{"youssef_khaled", "MA", 5}, {"zara_kapoor", "IN", 6}, {"anton_karlsen", "SE", 3},
-	{"bella_larsson", "SE", 4}, {"cedric_dubois", "FR", 5}, {"daria_smirnova", "RU", 7},
-	{"emil_petrov", "BG", 4}, {"fiona_kennedy", "IE", 6}, {"gustavo_silva", "BR", 7},
-	{"harper_clarke", "CA", 3}, {"isabel_nunez", "ES", 5}, {"jack_yamamoto", "JP", 6},
-	{"karim_rahman", "BD", 2}, {"lucia_ferrari", "IT", 6}, {"matteo_gallo", "IT", 7},
-	{"nadine_bakker", "NL", 8}, {"oscar_svensson", "SE", 5}, {"penelope_dunne", "NZ", 3},
-	{"qiang_liu", "CN", 7}, {"raj_patel", "IN", 4}, {"samantha_brown", "US", 6},
-	{"thomas_muller", "DE", 5}, {"ulrik_berg", "NO", 6}, {"valeria_ramos", "PE", 7},
-	{"william_owen", "GB", 3}, {"xiaoli_chen", "CN", 5}, {"yuki_sato", "JP", 8},
-	{"zeynep_aydin", "TR", 9}, {"aaron_clark", "US", 4}, {"bianca_santos", "BR", 6},
-	{"cameron_wilson", "GB", 5}, {"daniela_rodriguez", "CL", 4}, {"emre_ozdemir", "TR", 3},
-	{"farah_abdul", "SA", 7}, {"goran_jovanovic", "RS", 4}, {"hana_elmadi", "DZ", 6},
-	{"ibrahim_sow", "SN", 8}, {"johan_nilsson", "SE", 5}, {"karla_ortega", "MX", 4},
-	{"liam_brennan", "IE", 3}, {"maya_cohen", "IL", 6}, {"neha_sharma", "IN", 7},
-	{"otto_meier", "DE", 5}, {"pia_koskinen", "FI", 6}, {"quentin_martel", "FR", 7},
-	{"rohan_desai", "IN", 3}, {"sara_haddad", "MA", 8}, {"timo_ahlberg", "FI", 5},
-	{"uliana_kuznetsova", "RU", 7}, {"victoria_lopes", "BR", 4}, {"wassim_hamdi", "TN", 6},
-	{"ximena_vega", "PE", 2}, {"yasir_khan", "PK", 9}, {"zsolt_szabo", "HU", 5},
-	{"adriana_dumitru", "RO", 6}, {"benjamin_hoffman", "DE", 4}, {"chloe_marchand", "FR", 3},
-	{"diego_fuentes", "UY", 5}, {"eva_meyer", "CH", 6}, {"felix_morales", "EC", 7},
-	{"grace_yip", "SG", 4}, {"hugo_leblanc", "CA", 5}, {"ines_fernandez", "ES", 6},
-	{"james_ryan", "US", 8}, {"khalid_nasser", "JO", 7}, {"leila_saidi", "DZ", 4},
-	{"marko_todorovic", "RS", 5}, {"nadia_samir", "EG", 6}, {"omar_hassan", "SD", 3},
-	{"patricia_silva", "PT", 5}, {"ricardo_garcia", "MX", 6}, {"salma_abdel", "EG", 7},
-	{"tarek_mansour", "LB", 4}, {"ulric_weber", "DE", 6}, {"valentina_mora", "CL", 5},
-	{"wenjie_li", "CN", 7}, {"xander_blake", "US", 3}, {"yasmin_almawi", "SA", 6},
-	{"zachary_reed", "US", 4},
-}
+var dummyPlayersJson = `[
+	{"id":"alice_smith","country_code":"US","level":7},
+	{"id":"bob_jones","country_code":"GB","level":6},
+	{"id":"carlos_mendez","country_code":"MX","level":3},
+	{"id":"diana_lee","country_code":"KR","level":9},
+	{"id":"ethan_wong","country_code":"SG","level":5},
+	{"id":"fatima_khan","country_code":"PK","level":8},
+	{"id":"george_nash","country_code":"AU","level":4},
+	{"id":"hana_tanaka","country_code":"JP","level":6},
+	{"id":"ian_clark","country_code":"CA","level":7},
+	{"id":"julia_roberts","country_code":"US","level":3},
+	{"id":"kevin_singh","country_code":"IN","level":5},
+	{"id":"laura_gomez","country_code":"ES","level":2},
+	{"id":"mohamed_fahmy","country_code":"EG","level":8},
+	{"id":"natalie_cho","country_code":"KR","level":7},
+	{"id":"oliver_klein","country_code":"DE","level":6},
+	{"id":"paula_martins","country_code":"BR","level":4},
+	{"id":"quentin_diaz","country_code":"AR","level":3},
+	{"id":"rashid_ali","country_code":"AE","level":7},
+	{"id":"sofia_perez","country_code":"CO","level":5},
+	{"id":"tommy_nilsen","country_code":"NO","level":6},
+	{"id":"ursula_meier","country_code":"CH","level":4},
+	{"id":"viktor_ivanov","country_code":"RU","level":9},
+	{"id":"wanda_nowak","country_code":"PL","level":2},
+	{"id":"xinyi_zhang","country_code":"CN","level":7},
+	{"id":"youssef_khaled","country_code":"MA","level":5},
+	{"id":"zara_kapoor","country_code":"IN","level":6},
+	{"id":"anton_karlsen","country_code":"SE","level":3},
+	{"id":"bella_larsson","country_code":"SE","level":4},
+	{"id":"cedric_dubois","country_code":"FR","level":5},
+	{"id":"daria_smirnova","country_code":"RU","level":7},
+	{"id":"emil_petrov","country_code":"BG","level":4},
+	{"id":"fiona_kennedy","country_code":"IE","level":6},
+	{"id":"gustavo_silva","country_code":"BR","level":7},
+	{"id":"harper_clarke","country_code":"CA","level":3},
+	{"id":"isabel_nunez","country_code":"ES","level":5},
+	{"id":"jack_yamamoto","country_code":"JP","level":6},
+	{"id":"karim_rahman","country_code":"BD","level":2},
+	{"id":"lucia_ferrari","country_code":"IT","level":6},
+	{"id":"matteo_gallo","country_code":"IT","level":7},
+	{"id":"nadine_bakker","country_code":"NL","level":8},
+	{"id":"oscar_svensson","country_code":"SE","level":5},
+	{"id":"penelope_dunne","country_code":"NZ","level":3},
+	{"id":"qiang_liu","country_code":"CN","level":7},
+	{"id":"raj_patel","country_code":"IN","level":4},
+	{"id":"samantha_brown","country_code":"US","level":6},
+	{"id":"thomas_muller","country_code":"DE","level":5},
+	{"id":"ulrik_berg","country_code":"NO","level":6},
+	{"id":"valeria_ramos","country_code":"PE","level":7},
+	{"id":"william_owen","country_code":"GB","level":3},
+	{"id":"xiaoli_chen","country_code":"CN","level":5},
+	{"id":"yuki_sato","country_code":"JP","level":8},
+	{"id":"zeynep_aydin","country_code":"TR","level":9},
+	{"id":"aaron_clark","country_code":"US","level":4},
+	{"id":"bianca_santos","country_code":"BR","level":6},
+	{"id":"cameron_wilson","country_code":"GB","level":5},
+	{"id":"daniela_rodriguez","country_code":"CL","level":4},
+	{"id":"emre_ozdemir","country_code":"TR","level":3},
+	{"id":"farah_abdul","country_code":"SA","level":7},
+	{"id":"goran_jovanovic","country_code":"RS","level":4},
+	{"id":"hana_elmadi","country_code":"DZ","level":6},
+	{"id":"ibrahim_sow","country_code":"SN","level":8},
+	{"id":"johan_nilsson","country_code":"SE","level":5},
+	{"id":"karla_ortega","country_code":"MX","level":4},
+	{"id":"liam_brennan","country_code":"IE","level":3},
+	{"id":"maya_cohen","country_code":"IL","level":6},
+	{"id":"neha_sharma","country_code":"IN","level":7},
+	{"id":"otto_meier","country_code":"DE","level":5},
+	{"id":"pia_koskinen","country_code":"FI","level":6},
+	{"id":"quentin_martel","country_code":"FR","level":7},
+	{"id":"rohan_desai","country_code":"IN","level":3},
+	{"id":"sara_haddad","country_code":"MA","level":8},
+	{"id":"timo_ahlberg","country_code":"FI","level":5},
+	{"id":"uliana_kuznetsova","country_code":"RU","level":7},
+	{"id":"victoria_lopes","country_code":"BR","level":4},
+	{"id":"wassim_hamdi","country_code":"TN","level":6},
+	{"id":"ximena_vega","country_code":"PE","level":2},
+	{"id":"yasir_khan","country_code":"PK","level":9},
+	{"id":"zsolt_szabo","country_code":"HU","level":5},
+	{"id":"adriana_dumitru","country_code":"RO","level":6},
+	{"id":"benjamin_hoffman","country_code":"DE","level":4},
+	{"id":"chloe_marchand","country_code":"FR","level":3},
+	{"id":"diego_fuentes","country_code":"UY","level":5},
+	{"id":"eva_meyer","country_code":"CH","level":6},
+	{"id":"felix_morales","country_code":"EC","level":7},
+	{"id":"grace_yip","country_code":"SG","level":4},
+	{"id":"hugo_leblanc","country_code":"CA","level":5},
+	{"id":"ines_fernandez","country_code":"ES","level":6},
+	{"id":"james_ryan","country_code":"US","level":8},
+	{"id":"khalid_nasser","country_code":"JO","level":7},
+	{"id":"leila_saidi","country_code":"DZ","level":4},
+	{"id":"marko_todorovic","country_code":"RS","level":5},
+	{"id":"nadia_samir","country_code":"EG","level":6},
+	{"id":"omar_hassan","country_code":"SD","level":3},
+	{"id":"patricia_silva","country_code":"PT","level":5},
+	{"id":"ricardo_garcia","country_code":"MX","level":6},
+	{"id":"salma_abdel","country_code":"EG","level":7},
+	{"id":"tarek_mansour","country_code":"LB","level":4},
+	{"id":"ulric_weber","country_code":"DE","level":6},
+	{"id":"valentina_mora","country_code":"CL","level":5},
+	{"id":"wenjie_li","country_code":"CN","level":7},
+	{"id":"xander_blake","country_code":"US","level":3},
+	{"id":"yasmin_almawi","country_code":"SA","level":6},
+	{"id":"zachary_reed","country_code":"US","level":4}
+]`
