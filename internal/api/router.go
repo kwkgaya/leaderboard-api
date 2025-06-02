@@ -1,8 +1,8 @@
 package api
 
 import (
-	"leaderboard/api/handlers"
 	_ "leaderboard/docs" // Import the generated Swagger docs
+	"leaderboard/internal/handlers"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"leaderboard/api"
+	"leaderboard/internal/api"
 	"leaderboard/internal/storage"
 )
 
