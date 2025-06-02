@@ -12,7 +12,6 @@ import (
 func Router() http.Handler {
 	r := chi.NewRouter()
 
-	// TODO: Exclude from production builds
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Post("/leaderboard/join", handlers.JoinHandler)
