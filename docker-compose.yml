@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  leaderboard-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: leaderboard-api:latest
+    container_name: leaderboard-api
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
