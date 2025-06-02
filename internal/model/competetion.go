@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // ICompetition defines the contract for a competition
@@ -36,13 +38,22 @@ type Competition struct {
 	scoreMutex    *sync.Mutex
 }
 
-var ErrCompetitionFull = errors.New("competition is full, cannot add more players")
-var ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
-var ErrNotEnoughPlayers = errors.New("competition don't have enough players to start")
+var (
+	ErrCompetitionFull    = errors.New("competition is full, cannot add more players")
+	ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
+	ErrNotEnoughPlayers   = errors.New("competition don't have enough players to start")
 
-var ErrPlayerIdEmpty = errors.New("player ID cannot be empty")
-var ErrPlayerNotFound = errors.New("player not found in competition")
-var ErrPointsNegative = errors.New("points cannot be negative")
+	ErrPlayerIdEmpty  = errors.New("player ID cannot be empty")
+	ErrPlayerNotFound = errors.New("player not found in competition")
+	ErrPointsNegative = errors.New("points cannot be negative")
+)
+
+var (
+	competetionsStarted = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "leaderboard_competitions_started_total",
+		Help: "The total number of competitions started",
+	})
+)
 
 func NewCompetition() ICompetition {
 	var comp = &Competition{
@@ -92,6 +103,7 @@ func (c *Competition) Start() error {
 
 	c.startedAt = timeprovider.Current.Now()
 	c.endsAt = c.startedAt.Add(config.CompetitionDuration)
+	competetionsStarted.Inc()
 	return nil
 }
 

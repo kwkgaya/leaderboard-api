@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   leaderboard-api:
     build:
       context: .
       dockerfile: Dockerfile
+      no_cache: true
     image: leaderboard-api:latest
     container_name: leaderboard-api
     ports:

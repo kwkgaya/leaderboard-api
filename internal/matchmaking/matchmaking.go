@@ -8,6 +8,9 @@ import (
 	"leaderboard/internal/timeprovider"
 	"sync"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
@@ -23,6 +26,13 @@ var (
 	// Maps to hold players and competitions waiting for a match
 	waitingPlayers      = make(map[int]*model.Player)
 	waitingCompetitions = make(map[int]model.ICompetition)
+)
+
+var (
+	competetionsCreated = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "leaderboard_competitions_created_total",
+		Help: "The total number of competitions created",
+	})
 )
 
 var JoinCompetition = func(playerID string) (model.ICompetition, error) {
@@ -183,6 +193,7 @@ func createNewCompetition(player *model.Player, waitingPlayer *model.Player) (mo
 
 	delete(waitingPlayers, waitingPlayer.Level())
 	delete(waitingPlayers, player.Level())
+	competetionsCreated.Inc()
 
 	return comp, nil
 }

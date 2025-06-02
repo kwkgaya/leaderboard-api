@@ -32,6 +32,17 @@ You can also start and debug the application directly from Visual Studio Code.
 
 ---
 
+## Prometheus metrics
+
+- Prometheus metrics of the service are accessible from [http://localhost:8080/metrics](http://localhost:8080/metrics)
+- The metrics follow the guidelines from [this guide](https://prometheus.io/docs/practices/naming/)
+
+### Available metrics
+
+- `leaderboard_competitions_created_total`  - Total number of competitions created
+- `leaderboard_competitions_started_total` - Total number of metrics created
+- TODO: Add more metrics
+
 ## Design Decisions and Trade-offs
 
 - Invalid or empty arguments return HTTP status `400 Bad Request`, even if not specified in the API documentation.
@@ -47,7 +58,7 @@ You can also start and debug the application directly from Visual Studio Code.
 ## TODO
 
 - Implement country code-based matching
-- Implement Prometheus metrics
 - Refactor to use interfaces and a mock framework instead of mock function assignments
 - Move more domain logic from the leaderboard and matchmaking packages to the model
 - Improve performance by using less eager locking mechanisms or channel-based message passing
+- Implement health endpoint
