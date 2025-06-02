@@ -17,7 +17,6 @@ import (
 // @Failure      404  {string}  string  "Not found"
 // @Router       /leaderboard/{leaderboardID} [get]
 func LeaderboardHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	leaderboardID := chi.URLParam(r, "leaderboardID")
 
@@ -35,6 +34,7 @@ func LeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return
 	} else {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		return
 	}

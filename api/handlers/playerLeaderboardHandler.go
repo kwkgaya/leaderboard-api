@@ -33,8 +33,8 @@ func PlayerLeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
 		return
-	} else if encodingErr := json.NewEncoder(w).Encode(response); encodingErr != nil {
-		http.Error(w, fmt.Sprintf("Error encoding response: %v", encodingErr), http.StatusInternalServerError)
+	} else if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, fmt.Sprintf("Error encoding response: %v", err), http.StatusInternalServerError)
 		return
 	} else {
 		w.Header().Set("Content-Type", "application/json")
