@@ -12,7 +12,9 @@ import (
 
 var (
 	ErrPlayerIdEmpty          = errors.New("player ID cannot be empty")
+	ErrLeaderboardIdEmpty     = errors.New("leaderboard ID cannot be empty")
 	ErrPlayerNotFound         = errors.New("player not found")
+	ErrCompetetionNotFound    = errors.New("competition not found")
 	ErrCompetitionEnded       = errors.New("competition has ended, cannot add score for player")
 	ErrCompetitionNotStarted  = errors.New("competition has not started yet, cannot add score for player")
 	ErrPlayerNotInCompetition = errors.New("player is not in a competition, cannot add score")
@@ -31,6 +33,17 @@ var AddScore = func(playerId string, points int) error {
 
 	err = comp.AddScore(playerId, points)
 	return err
+}
+
+var GetLeaderboard = func(leaderboardId string) (*LeaderboardResponse, error) {
+	if leaderboardId == "" {
+		return nil, ErrLeaderboardIdEmpty
+	}
+	comp, found := storage.Competitions[leaderboardId]
+	if !found {
+		return nil, ErrCompetetionNotFound
+	}
+	return asLeaderboardResponse(comp), nil
 }
 
 var GetLeaderboardForPlayer = func(playerId string) (*LeaderboardResponse, error) {

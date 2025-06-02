@@ -18,7 +18,7 @@ func Router() http.Handler {
 	r.Post("/leaderboard/join", handlers.JoinHandler)
 	r.Post("/leaderboard/score", handlers.SubmitScoreHandler)
 	r.Get("/leaderboard/player/{playerID}", handlers.PlayerLeaderboardHandler)
-	r.Get("/leaderboard/{leaderboardID}", handlers.CompetitionHandler)
+	r.Get("/leaderboard/{leaderboardID}", handlers.LeaderboardHandler)
 
 	return r
 }
