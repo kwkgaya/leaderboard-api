@@ -3,7 +3,7 @@ info:
 paths:
   /leaderboard/{leaderboardID}:
     get:
-      description: Get competition by ID
+      description: Get leaderboard by ID
       parameters:
       - description: Leaderboard ID
         in: path
@@ -20,7 +20,7 @@ paths:
           description: Not found
           schema:
             type: string
-      summary: Get competition leaderboard
+      summary: Get leaderboard
   /leaderboard/join:
     post:
       description: Match a player to a competition or enqueue them

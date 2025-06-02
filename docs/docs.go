@@ -112,8 +112,8 @@ const docTemplate = `{
         },
         "/leaderboard/{leaderboardID}": {
             "get": {
-                "description": "Get competition by ID",
-                "summary": "Get competition leaderboard",
+                "description": "Get leaderboard by ID",
+                "summary": "Get leaderboard",
                 "parameters": [
                     {
                         "type": "string",
