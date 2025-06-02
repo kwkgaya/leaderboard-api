@@ -33,7 +33,7 @@ type Competition struct {
 	endsAt        time.Time
 	players       map[string]*CompetingPlayer
 	sortedPlayers []*CompetingPlayer
-	scoreMutex    sync.Mutex
+	scoreMutex    *sync.Mutex
 }
 
 var ErrCompetitionFull = errors.New("competition is full, cannot add more players")
@@ -88,6 +88,7 @@ func (c *Competition) Start() error {
 		return ErrNotEnoughPlayers
 	}
 	c.sortedPlayers = slices.Collect(maps.Values(c.players))
+	c.scoreMutex = &sync.Mutex{}
 
 	c.startedAt = timeprovider.Current.Now()
 	c.endsAt = c.startedAt.Add(config.CompetitionDuration)
