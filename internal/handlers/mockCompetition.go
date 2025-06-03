@@ -17,7 +17,7 @@ type mockCompetition struct {
 func (m *mockCompetition) Id() string           { return m.id }
 func (m *mockCompetition) StartedAt() time.Time { return m.startedAt }
 func (m *mockCompetition) EndsAt() time.Time    { return m.endsAt }
-func (m *mockCompetition) CreatedAt() time.Time { return time.Time{} }
+func (m *mockCompetition) InitialLevel() int    { return 0 }
 func (m *mockCompetition) PlayersMap() map[string]*model.CompetingPlayer {
 	return nil // Not needed for these tests
 }

@@ -18,7 +18,6 @@ import (
 // ICompetition defines the contract for a competition
 type ICompetition interface {
 	Id() string
-	CreatedAt() time.Time
 	StartedAt() time.Time
 	EndsAt() time.Time
 	PlayersMap() map[string]*CompetingPlayer
@@ -26,16 +25,17 @@ type ICompetition interface {
 	AddPlayer(player *Player) error
 	Start() error
 	AddScore(playerId string, points int) error
+	InitialLevel() int
 }
 
 type Competition struct {
 	id            string
-	createdAt     time.Time
 	startedAt     time.Time
 	endsAt        time.Time
 	players       map[string]*CompetingPlayer
 	sortedPlayers []*CompetingPlayer
 	scoreMutex    *sync.Mutex
+	initialLevel  int
 }
 
 var (
@@ -55,13 +55,13 @@ var (
 	})
 )
 
-func NewCompetition() ICompetition {
+func NewCompetition(initialLevel int) ICompetition {
 	var comp = &Competition{
-		id:        uuid.New().String(),
-		createdAt: timeprovider.Current.Now(),
-		startedAt: time.Time{},
-		endsAt:    time.Time{},
-		players:   make(map[string]*CompetingPlayer, config.MaxPlayersForCompetition),
+		id:           uuid.New().String(),
+		initialLevel: initialLevel,
+		startedAt:    time.Time{},
+		endsAt:       time.Time{},
+		players:      make(map[string]*CompetingPlayer, config.MaxPlayersForCompetition),
 	}
 	return comp
 }
@@ -137,10 +137,6 @@ func (c *Competition) Id() string {
 	return c.id
 }
 
-func (c *Competition) CreatedAt() time.Time {
-	return c.createdAt
-}
-
 func (c *Competition) StartedAt() time.Time {
 	return c.startedAt
 }
@@ -152,4 +148,7 @@ func (c *Competition) PlayersMap() map[string]*CompetingPlayer {
 }
 func (c *Competition) Leaderboard() []*CompetingPlayer {
 	return c.sortedPlayers
+}
+func (c *Competition) InitialLevel() int {
+	return c.initialLevel
 }

@@ -8,9 +8,6 @@ import (
 	"leaderboard/internal/timeprovider"
 	"sync"
 	"time"
-
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
@@ -24,15 +21,7 @@ var (
 	mutex = &sync.Mutex{}
 
 	// Maps to hold players and competitions waiting for a match
-	waitingPlayers      = make(map[int]*model.Player)
 	waitingCompetitions = make(map[int]model.ICompetition)
-)
-
-var (
-	competetionsCreated = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "leaderboard_competitions_created_total",
-		Help: "The total number of competitions created",
-	})
 )
 
 var JoinCompetition = func(playerID string) (model.ICompetition, error) {
@@ -67,29 +56,21 @@ var JoinCompetition = func(playerID string) (model.ICompetition, error) {
 		}
 		return comp, nil
 	} else {
-		waitingPlayer, waitingPlayerFound := waitingPlayers[player.Level()]
-		if waitingPlayerFound {
-			// If there's already a waiting player at this level, create a new competition and add both players
-			comp, err := createNewCompetition(player, waitingPlayer)
-			if err != nil {
-				return nil, err
-			}
-			return comp, nil
-		} else {
-			// No competition found, add player to waiting list
-			waitingPlayers[player.Level()] = player
-			// Start a timer to try starting a competition after the wait duration
-			go func() {
-				timer := time.NewTimer(config.MatchWaitDuration)
-				<-timer.C
-				err1 := tryStartCompetition(player)
-				if err1 != nil {
-					panic(err1) // Handle error appropriately in production code
-				}
-			}()
-
-			return nil, nil // Player is now waiting for a match
+		comp, err := createNewCompetition(player)
+		if err != nil {
+			return nil, err
 		}
+		// Start a timer to try starting a competition after the wait duration
+		go func() {
+			timer := time.NewTimer(config.MatchWaitDuration)
+			<-timer.C
+			err1 := tryStartCompetition(player)
+			if err1 != nil {
+				panic(err1) // Handle error appropriately in production code
+			}
+		}()
+
+		return comp, nil // Player is now waiting for a match
 	}
 }
 
@@ -103,9 +84,9 @@ func tryStartCompetition(player *model.Player) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if player.Competition() != nil {
+	comp := player.Competition()
+	if comp != nil && len(comp.PlayersMap()) >= config.MinPlayersForCompetition {
 		// Player is already in a competition. Start it if not already started
-		comp := player.Competition()
 		if comp.StartedAt().IsZero() {
 			err := comp.Start()
 			delete(waitingCompetitions, player.Level())
@@ -116,32 +97,46 @@ func tryStartCompetition(player *model.Player) error {
 		return nil
 	}
 
-	playerFound := false
+	matched := false
 	for i := 1; ; i++ {
-		// Try finding a matching player at closest levels
+		// Try finding a matching competioion at closest levels
 		higherLevel := player.Level() + i
 		lowerLevel := player.Level() - i
-		var waitingPlayer *model.Player
+
+		// Check if we have a competition waiting for a player at the higher or lower level
+		var waitingComp model.ICompetition
 		if higherLevel <= config.MaxLevel {
-			waitingPlayer, playerFound = waitingPlayers[higherLevel]
+			if waitingComp = waitingCompetitions[higherLevel]; comp != nil {
+				err := waitingComp.AddPlayer(player)
+				if err != nil {
+					return err
+				}
+				matched = true
+			}
 		}
-		if !playerFound && lowerLevel >= config.MinLevel {
-			waitingPlayer, playerFound = waitingPlayers[lowerLevel]
+		if !matched && lowerLevel >= config.MinLevel {
+			if waitingComp = waitingCompetitions[lowerLevel]; comp != nil {
+				err := waitingComp.AddPlayer(player)
+				if err != nil {
+					return err
+				}
+				delete(waitingCompetitions, lowerLevel)
+				matched = true
+			}
 		}
-		if playerFound {
-			comp, err := createNewCompetition(player, waitingPlayer)
+		if waitingComp != nil {
+			comp = waitingComp
+			player.SetCompetition(comp)
+			delete(waitingCompetitions, comp.InitialLevel())
+		}
+
+		if matched {
+			err := comp.Start()
+
 			if err != nil {
 				return err
 			}
-
-			err = comp.Start()
 			delete(waitingCompetitions, player.Level())
-			delete(waitingCompetitions, waitingPlayer.Level())
-
-			if err != nil {
-				return err
-			}
-
 			break
 		}
 		if higherLevel >= config.MaxLevel && lowerLevel <= config.MinLevel {
@@ -150,7 +145,7 @@ func tryStartCompetition(player *model.Player) error {
 	}
 
 	// If still no matching player is found, we can start a ticker to keep checking
-	if !playerFound {
+	if !matched {
 		go scheduleTickerForPlayer(player)
 	}
 
@@ -174,26 +169,18 @@ func scheduleTickerForPlayer(player *model.Player) {
 	}
 }
 
-func createNewCompetition(player *model.Player, waitingPlayer *model.Player) (model.ICompetition, error) {
-	if player == nil || waitingPlayer == nil {
-		return nil, errors.New("both players must be provided")
+func createNewCompetition(player *model.Player) (model.ICompetition, error) {
+	if player == nil {
+		return nil, errors.New("player must be provided")
 	}
 
-	comp := model.NewCompetition()
+	comp := model.NewCompetition(player.Level())
 	storage.Competitions[comp.Id()] = comp
 	err := comp.AddPlayer(player)
 	if err != nil {
 		return nil, err
 	}
-	err = comp.AddPlayer(waitingPlayer)
-	if err != nil {
-		return nil, err
-	}
-	waitingCompetitions[waitingPlayer.Level()] = comp
-
-	delete(waitingPlayers, waitingPlayer.Level())
-	delete(waitingPlayers, player.Level())
-	competetionsCreated.Inc()
+	waitingCompetitions[player.Level()] = comp
 
 	return comp, nil
 }

@@ -12,14 +12,8 @@ import (
 )
 
 func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
-	// Arrange
-	fixedTime := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
-	originalProvider := timeprovider.Current
-	timeprovider.Current = &timeprovider.MockTimeProvider{FixedTime: fixedTime}
-	defer func() { timeprovider.Current = originalProvider }()
-
 	// Act
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 
 	// Assert
 	if competition == nil {
@@ -28,8 +22,8 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 	if _, err := uuid.Parse(competition.Id()); err != nil {
 		t.Errorf("expected valid UUID for ID, got %q", competition.Id())
 	}
-	if !competition.CreatedAt().Equal(fixedTime) {
-		t.Errorf("expected CreatedAt %v, got %v", fixedTime, competition.CreatedAt())
+	if competition.InitialLevel() != 1 {
+		t.Errorf("expected InitialLevel 1, got %d", competition.InitialLevel())
 	}
 	if !competition.StartedAt().IsZero() {
 		t.Errorf("expected StartedAt to be zero, got %v", competition.StartedAt())
@@ -49,7 +43,7 @@ func TestNewCompetition_InitializesFieldsCorrectly(t *testing.T) {
 }
 
 func TestCompetition_AddPlayer_Success(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player := NewPlayer("p1", 1, "US")
 
 	err := competition.AddPlayer(player)
@@ -75,7 +69,7 @@ func TestCompetition_AddPlayer_Success(t *testing.T) {
 }
 
 func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	for i := 0; i < config.MaxPlayersForCompetition; i++ {
 		player := NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US")
 
@@ -92,7 +86,7 @@ func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 }
 
 func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	for i := 0; i < config.MinPlayersForCompetition; i++ {
 		err1 := competition.AddPlayer(NewPlayer(fmt.Sprintf("p%v", i+1), 1, "US"))
 		if err1 != nil {
@@ -112,7 +106,7 @@ func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
 }
 
 func TestCompetition_Start_NotEnoughPlayers(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	// Only one player, less than MinPlayersForCompetition
 	player := NewPlayer("p0", 1, "US")
 	_ = competition.AddPlayer(player)
@@ -130,7 +124,7 @@ func TestCompetition_Start_SuccessWithMinPlayers(t *testing.T) {
 	timeprovider.Current = &timeprovider.MockTimeProvider{FixedTime: fixedTime}
 	defer func() { timeprovider.Current = originalProvider }()
 
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player1 := NewPlayer("p1", 1, "US")
 	player2 := NewPlayer("p2", 1, "US")
 	_ = competition.AddPlayer(player1)
@@ -151,7 +145,7 @@ func TestCompetition_Start_SuccessWithMinPlayers(t *testing.T) {
 }
 
 func TestCompetition_Start_CalledTwice(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player1 := NewPlayer("p1", 1, "US")
 	player2 := NewPlayer("p2", 1, "US")
 	_ = competition.AddPlayer(player1)
@@ -169,7 +163,7 @@ func TestCompetition_Start_CalledTwice(t *testing.T) {
 }
 
 func TestCompetition_AddScore_Success(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player := NewPlayer("p1", 1, "US")
 	err := competition.AddPlayer(player)
 	if err != nil {
@@ -190,7 +184,7 @@ func TestCompetition_AddScore_Success(t *testing.T) {
 }
 
 func TestCompetition_AddScore_PlayerEmptyString(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	err := competition.AddScore("", 5)
 	if err != ErrPlayerIdEmpty {
 		t.Errorf("expected ErrPlayerIdEmpty, got %v", err)
@@ -198,7 +192,7 @@ func TestCompetition_AddScore_PlayerEmptyString(t *testing.T) {
 }
 
 func TestCompetition_AddScore_PointsNegative(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player := NewPlayer("p1", 1, "US")
 	_ = competition.AddPlayer(player)
 
@@ -209,7 +203,7 @@ func TestCompetition_AddScore_PointsNegative(t *testing.T) {
 }
 
 func TestCompetition_AddScore_PlayerNotFound(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player := NewPlayer("p1", 1, "US")
 	// Not adding player to competition
 
@@ -220,7 +214,7 @@ func TestCompetition_AddScore_PlayerNotFound(t *testing.T) {
 }
 
 func TestCompetition_AddScore_SortLeaderboardAccordingToScore(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player1 := NewPlayer("a", 1, "US")
 	player2 := NewPlayer("b", 1, "US")
 	_ = competition.AddPlayer(player1)
@@ -247,7 +241,7 @@ func TestCompetition_AddScore_SortLeaderboardAccordingToScore(t *testing.T) {
 }
 
 func TestCompetition_AddScore_SortLeaderboardAccordingToScoreThenName(t *testing.T) {
-	competition := NewCompetition()
+	competition := NewCompetition(1)
 	player1 := NewPlayer("a", 1, "US")
 	player2 := NewPlayer("b", 1, "US")
 	player3 := NewPlayer("c", 1, "US")
