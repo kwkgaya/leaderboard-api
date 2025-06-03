@@ -39,9 +39,11 @@ type Competition struct {
 }
 
 var (
-	ErrCompetitionFull    = errors.New("competition is full, cannot add more players")
-	ErrCompetitionStarted = errors.New("competition has already started, cannot add players")
-	ErrNotEnoughPlayers   = errors.New("competition don't have enough players to start")
+	ErrCompetitionFull            = errors.New("competition is full, cannot add more players")
+	ErrCompetitionStarted         = errors.New("competition has already started, cannot add players")
+	ErrCompetitionNotStarted      = errors.New("competition has not started yet")
+	ErrNotEnoughPlayers           = errors.New("competition don't have enough players to start")
+	ErrPlayerAlreadyInCompetition = errors.New("player is already in this competition")
 
 	ErrPlayerIdEmpty  = errors.New("player ID cannot be empty")
 	ErrPlayerNotFound = errors.New("player not found in competition")
@@ -75,6 +77,9 @@ func (c *Competition) AddPlayer(player *Player) error {
 	}
 	if !c.startedAt.IsZero() {
 		return ErrCompetitionStarted
+	}
+	if c.players[player.Id()] != nil {
+		return ErrPlayerAlreadyInCompetition
 	}
 	c.players[player.Id()] = &CompetingPlayer{
 		player: player,
@@ -113,6 +118,9 @@ func (c *Competition) AddScore(playerId string, points int) error {
 	}
 	if points < 0 {
 		return ErrPointsNegative
+	}
+	if c.startedAt.IsZero() {
+		return ErrCompetitionNotStarted
 	}
 
 	if compPlayer, found := c.players[playerId]; found {

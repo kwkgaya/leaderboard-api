@@ -85,6 +85,21 @@ func TestCompetition_AddPlayer_CompetitionFull(t *testing.T) {
 	}
 }
 
+func TestCompetition_AddPlayer_PlayerAlreadyInCompetition(t *testing.T) {
+	competition := NewCompetition(1)
+	player := NewPlayer("p1", 1, "US")
+
+	err1 := competition.AddPlayer(player)
+	if err1 != nil {
+		t.Fatalf("unexpected error adding player: %v", err1)
+	}
+
+	err2 := competition.AddPlayer(player)
+	if err2 != ErrPlayerAlreadyInCompetition {
+		t.Errorf("expected ErrPlayerAlreadyInCompetition, got %v", err2)
+	}
+}
+
 func TestCompetition_AddPlayer_CompetitionStarted(t *testing.T) {
 	competition := NewCompetition(1)
 	for i := 0; i < config.MinPlayersForCompetition; i++ {
@@ -165,10 +180,16 @@ func TestCompetition_Start_CalledTwice(t *testing.T) {
 func TestCompetition_AddScore_Success(t *testing.T) {
 	competition := NewCompetition(1)
 	player := NewPlayer("p1", 1, "US")
+	player2 := NewPlayer("p2", 1, "US")
 	err := competition.AddPlayer(player)
 	if err != nil {
 		t.Fatalf("unexpected error adding player: %v", err)
 	}
+	err = competition.AddPlayer(player2)
+	if err != nil {
+		t.Fatalf("unexpected error adding player2: %v", err)
+	}
+	competition.Start()
 
 	err = competition.AddScore(player.id, 10)
 	if err != nil {
@@ -202,12 +223,35 @@ func TestCompetition_AddScore_PointsNegative(t *testing.T) {
 	}
 }
 
+func TestCompetition_AddScore_CompetitionNotStarted(t *testing.T) {
+	competition := NewCompetition(1)
+	player := NewPlayer("p1", 1, "US")
+
+	err := competition.AddScore(player.id, 5)
+	if err != ErrCompetitionNotStarted {
+		t.Errorf("expected ErrCompetitionNotStarted, got %v", err)
+	}
+}
+
 func TestCompetition_AddScore_PlayerNotFound(t *testing.T) {
 	competition := NewCompetition(1)
 	player := NewPlayer("p1", 1, "US")
-	// Not adding player to competition
+	player1 := NewPlayer("p2", 1, "US")
+	player2 := NewPlayer("p3", 1, "US")
+	err := competition.AddPlayer(player1)
+	if err != nil {
+		t.Fatalf("unexpected error adding player1: %v", err)
+	}
+	err = competition.AddPlayer(player2)
+	if err != nil {
+		t.Fatalf("unexpected error adding player2: %v", err)
+	}
+	err = competition.Start()
+	if err != nil {
+		t.Fatalf("unexpected error starting competition: %v", err)
+	}
 
-	err := competition.AddScore(player.id, 5)
+	err = competition.AddScore(player.id, 5)
 	if err != ErrPlayerNotFound {
 		t.Errorf("expected ErrPlayerNotFound, got %v", err)
 	}
