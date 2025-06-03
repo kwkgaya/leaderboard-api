@@ -184,7 +184,6 @@ func createNewCompetition(player *model.Player) (model.ICompetition, error) {
 	}
 	waitingCompetitions[player.Level()] = comp
 
-	// TODO: Check if operations on this slice are performance optimum
 	orderedCompetitions = append(orderedCompetitions, comp)
 
 	ensureMaxCompetitionsInMemory()
