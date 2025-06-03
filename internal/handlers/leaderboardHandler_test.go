@@ -57,6 +57,9 @@ func TestLeaderboardHandler_Success(t *testing.T) {
 	if !bytes.Contains(body, []byte(`"leaderboard_id":"leaderboard123"`)) {
 		t.Errorf("expected response body to contain leaderboard id, got %s", string(body))
 	}
+	if rr.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected Content-Type application/json, got %s", rr.Header().Get("Content-Type"))
+	}
 }
 
 func TestLeaderboardHandler_NotFound(t *testing.T) {
