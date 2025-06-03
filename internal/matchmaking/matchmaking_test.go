@@ -11,14 +11,6 @@ import (
 )
 
 func setup() {
-	// Reset global state before test
-	clear(waitingCompetitions)
-	clear(storage.Players)
-	clear(storage.Competitions)
-
-	config.MatchWaitDuration = 30 * time.Second
-	config.CompetitionDuration = 1 * time.Hour
-
 	storage.AddPlayers([]storage.NewPlayer{
 		{Id: "alice", CountryCode: "US", Level: 1},
 		{Id: "bob", CountryCode: "GB", Level: 2},
@@ -31,6 +23,15 @@ func setup() {
 		{Id: "carlos_2", CountryCode: "IN", Level: 3},
 		{Id: "ian", CountryCode: "IN", Level: 10},
 	})
+}
+
+func tearDown() {
+	config.MatchWaitDuration = 30 * time.Second
+	config.CompetitionDuration = 1 * time.Hour
+
+	clear(waitingCompetitions)
+	clear(storage.Players)
+	clear(storage.Competitions)
 }
 
 func TestJoinCompetitionBasic(t *testing.T) {
@@ -57,6 +58,7 @@ func TestJoinCompetitionBasic(t *testing.T) {
 			}
 		})
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_Matchmaking(t *testing.T) {
@@ -96,6 +98,7 @@ func TestJoinCompetition_Matchmaking(t *testing.T) {
 	if waitingCompetitions[2] == nil {
 		t.Errorf("waitingCompetitions at level 2 should not be nil, got %v", waitingCompetitions)
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
@@ -118,6 +121,7 @@ func TestJoinCompetition_AlreadyInCompetition(t *testing.T) {
 	if comp != nil {
 		t.Errorf("expected nil competition, got %v", comp)
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
@@ -173,6 +177,7 @@ func TestJoinCompetition_JoinMaxplayers_CompetitionStarts(t *testing.T) {
 			}
 		}
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_JoinMaxPlayersAndTwoMore_NewCompetitionCreated(t *testing.T) {
@@ -200,6 +205,7 @@ func TestJoinCompetition_JoinMaxPlayersAndTwoMore_NewCompetitionCreated(t *testi
 			}
 		}
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_MatchedwithTwoPlayers_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
@@ -228,6 +234,7 @@ func TestJoinCompetition_MatchedwithTwoPlayers_CompetitionStartsAfterMatchWaitDu
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_MatchedWithTwoPlayersInTwoLevels_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
@@ -267,6 +274,7 @@ func TestJoinCompetition_MatchedWithTwoPlayersInTwoLevels_CompetitionStartsAfter
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_MatchedwithTwoPlayersInMinAndMaxLevels_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
@@ -306,6 +314,7 @@ func TestJoinCompetition_MatchedwithTwoPlayersInMinAndMaxLevels_CompetitionStart
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_CompetitionStartAfterWait_NewJoineesAddedToNewCompetition(t *testing.T) {
@@ -354,6 +363,7 @@ func TestJoinCompetition_CompetitionStartAfterWait_NewJoineesAddedToNewCompetiti
 	if alice2comp.Id() == comp1.Id() {
 		t.Errorf("expected alice_2 to be added to a new competition, but added to old one %s", alice2comp.Id())
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(t *testing.T) {
@@ -386,6 +396,7 @@ func TestJoinCompetition_NotMatchedWithinWait_CompetitionStartsAfterNewUserJoin(
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinNewCompetition(t *testing.T) {
@@ -419,6 +430,7 @@ func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinNewCompetition(t *tes
 	if comp1.Id() == comp2.Id() {
 		t.Errorf("expected different competitions for bob_1, got same competition %s", comp1.Id())
 	}
+	tearDown()
 }
 
 func TestJoinCompetition_CompetitionCreatedAtAdjacentLevel_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
@@ -479,4 +491,5 @@ func TestJoinCompetition_CompetitionCreatedAtAdjacentLevel_CompetitionStartsAfte
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
 	}
+	tearDown()
 }
