@@ -160,3 +160,11 @@ func (c *Competition) Leaderboard() []*CompetingPlayer {
 func (c *Competition) InitialLevel() int {
 	return c.initialLevel
 }
+
+func (c *Competition) SetStartedAt(time time.Time) {
+	c.startedAt = time
+}
+
+func (c *Competition) SetEndsAt(time time.Time) {
+	c.endsAt = time
+}

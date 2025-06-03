@@ -28,7 +28,9 @@ func setup() {
 func tearDown() {
 	config.MatchWaitDuration = 30 * time.Second
 	config.CompetitionDuration = 1 * time.Hour
+	config.MaxCompetitionsInMemory = 100
 
+	orderedCompetitions = make([]model.ICompetition, 0)
 	clear(waitingCompetitions)
 	clear(storage.Players)
 	clear(storage.Competitions)

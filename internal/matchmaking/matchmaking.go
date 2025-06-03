@@ -22,6 +22,8 @@ var (
 
 	// Maps to hold players and competitions waiting for a match
 	waitingCompetitions = make(map[int]model.ICompetition)
+	// Slice to hold the competitions in the order they are created
+	orderedCompetitions = make([]model.ICompetition, 0, config.MaxCompetitionsInMemory)
 )
 
 var JoinCompetition = func(playerID string) (model.ICompetition, error) {
@@ -182,5 +184,26 @@ func createNewCompetition(player *model.Player) (model.ICompetition, error) {
 	}
 	waitingCompetitions[player.Level()] = comp
 
+	// TODO: Check if operations on this slice are performance optimum
+	orderedCompetitions = append(orderedCompetitions, comp)
+
+	ensureMaxCompetitionsInMemory()
+
 	return comp, nil
+}
+
+func ensureMaxCompetitionsInMemory() {
+	index := 0
+	// Usually this will only delete the oldest competition that has started and ended
+	// But ensure that we don't delete competitions that are still ongoing
+	for len(storage.Competitions) > config.MaxCompetitionsInMemory &&
+		!orderedCompetitions[index].StartedAt().IsZero() &&
+		orderedCompetitions[index].EndsAt().Before(timeprovider.Current.Now()) {
+		// Remove the oldest competition that has started and ended
+		delete(storage.Competitions, orderedCompetitions[index].Id())
+		index += 1
+	}
+	if index > 0 {
+		orderedCompetitions = orderedCompetitions[index:]
+	}
 }
