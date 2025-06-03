@@ -39,8 +39,8 @@ You can also start and debug the application directly from Visual Studio Code.
 
 ### Available metrics
 
-- `leaderboard_competitions_created_total`  - Total number of competitions created
-- `leaderboard_competitions_started_total` - Total number of metrics created
+- `leaderboard_competitions_created_total` - Total number of competitions created
+- `leaderboard_competitions_started_total` - Total number of competitions started
 - TODO: Add more metrics
 
 ## Design Decisions and Trade-offs
