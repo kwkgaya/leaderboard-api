@@ -106,7 +106,7 @@ func tryStartCompetition(player *model.Player) error {
 		// Check if we have a competition waiting for a player at the higher or lower level
 		var waitingComp model.ICompetition
 		if higherLevel <= config.MaxLevel {
-			if waitingComp = waitingCompetitions[higherLevel]; comp != nil {
+			if waitingComp = waitingCompetitions[higherLevel]; waitingComp != nil {
 				err := waitingComp.AddPlayer(player)
 				if err != nil {
 					return err
@@ -115,7 +115,7 @@ func tryStartCompetition(player *model.Player) error {
 			}
 		}
 		if !matched && lowerLevel >= config.MinLevel {
-			if waitingComp = waitingCompetitions[lowerLevel]; comp != nil {
+			if waitingComp = waitingCompetitions[lowerLevel]; waitingComp != nil {
 				err := waitingComp.AddPlayer(player)
 				if err != nil {
 					return err

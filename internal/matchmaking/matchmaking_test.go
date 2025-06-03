@@ -13,8 +13,8 @@ import (
 func setup() {
 	// Reset global state before test
 	clear(waitingCompetitions)
-	storage.Players = map[string]*model.Player{}
-	storage.Competitions = map[string]model.ICompetition{}
+	clear(storage.Players)
+	clear(storage.Competitions)
 
 	config.MatchWaitDuration = 30 * time.Second
 	config.CompetitionDuration = 1 * time.Hour
@@ -393,8 +393,14 @@ func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinNewCompetition(t *tes
 	config.MatchWaitDuration = 500 * time.Millisecond // Set a short wait duration for testing
 	config.CompetitionDuration = 1 * time.Second
 
-	_, _ = JoinCompetition("bob")
-	comp1, _ := JoinCompetition("bob_1")
+	_, err := JoinCompetition("bob")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	comp1, err := JoinCompetition("bob_1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	time.Sleep(2 * time.Second) // Wait for starting and ending
 
@@ -415,23 +421,29 @@ func TestJoinCompetition_CompetetionStartAndEnd_UserCanJoinNewCompetition(t *tes
 	}
 }
 
-func TestJoinCompetition_UnmatchedAndACompetitionCreatedAtAdjacentLevel_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
+func TestJoinCompetition_CompetitionCreatedAtAdjacentLevel_CompetitionStartsAfterMatchWaitDuration(t *testing.T) {
 	setup()
 	config.MatchWaitDuration = 1 * time.Second // Set a short wait duration for testing
 
-	_, err := JoinCompetition("alice")
+	aliceComp, err := JoinCompetition("alice")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	time.Sleep(100 * time.Millisecond)
-	_, err = JoinCompetition("bob")
+	bobComp, err := JoinCompetition("bob")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	_, err = JoinCompetition("bob_1")
+	bob1Comp, err := JoinCompetition("bob_1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	if aliceComp == bobComp {
+		t.Errorf("expected alice and bob to be in different competitions, got same competition %s", aliceComp.Id())
+	}
+	if bobComp != bob1Comp {
+		t.Errorf("expected bob and bob_1 to be in the same competition, got different competitions %s and %s", bobComp.Id(), bob1Comp.Id())
+	}
+
 	alice := storage.Players["alice"]
 	bob := storage.Players["bob"]
 	bob1 := storage.Players["bob_1"]
@@ -447,16 +459,22 @@ func TestJoinCompetition_UnmatchedAndACompetitionCreatedAtAdjacentLevel_Competit
 	if bob1.Competition() == nil {
 		t.Errorf("bob_1 should be in a competition, got nil")
 	}
-	if alice.Competition().Id() != bob.Competition().Id() && alice.Competition().Id() != bob1.Competition().Id() {
-		t.Errorf("alice, bob and bob_1 should be in the same competition, got %s, %s and %s", alice.Competition().Id(), bob.Competition().Id(), bob.Competition().Id())
+	if bob.Competition().Id() != bob1.Competition().Id() {
+		t.Errorf("bob and bob_1 should be in the same competition, got %s and %s", bob.Competition().Id(), bob1.Competition().Id())
+	}
+	if alice.Competition().Id() != bob.Competition().Id() {
+		t.Errorf("alice and bob should be in the same competition, got %s and %s", alice.Competition().Id(), bob.Competition().Id())
 	}
 	comp := alice.Competition()
+	if comp != bobComp {
+		t.Errorf("expected alice's competition to be the same as bob's result from JoinCompetetion, got %s and %s", comp.Id(), bobComp.Id())
+	}
 
 	if comp.StartedAt().IsZero() {
 		t.Errorf("competition should have started after %v, got started at %v", config.MatchWaitDuration, comp.StartedAt())
 	}
 	if len(comp.PlayersMap()) != 3 {
-		t.Errorf("competition should have 3 players, got %d", len(comp.PlayersMap()))
+		t.Errorf("competition should have 3 players, got %v", comp.PlayersMap())
 	}
 	if len(waitingCompetitions) != 0 {
 		t.Errorf("waitingCompetitions should be empty after competition started, got %v", waitingCompetitions)
